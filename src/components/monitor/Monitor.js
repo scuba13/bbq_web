@@ -12,6 +12,7 @@ import {
 
 import FireIcon from "@mui/icons-material/Whatshot";
 import FireOffIcon from "@mui/icons-material/WhatshotOutlined";
+import Chunk from "@mui/icons-material/Savings";
 
 function Monitor() {
   const [temps, setTemps] = useState({
@@ -127,17 +128,16 @@ function Monitor() {
                 gutterBottom
                 style={{ display: "flex", alignItems: "center" }}
               >
-                BBQ {/* Espaço adicionado aqui */}
                 {temps.relayState === "ON" ? (
                   <FireIcon
                     color="error"
-                    style={{ fontSize: 30, marginLeft: 5 }}
-                  /> // Aumenta o tamanho e adiciona margem à esquerda
+                    style={{ fontSize: 30, marginRight: 5 }} // Increase size and add left margin
+                  />
                 ) : (
-                  <FireOffIcon style={{ fontSize: 30, marginLeft: 5 }} /> // Mesmo ajuste para o ícone "OFF"
+                  <FireOffIcon style={{ fontSize: 30, marginRight: 5 }} /> // Same adjustment for the "OFF" icon
                 )}
+                BBQ {/* Space added here */}
               </Typography>
-
               {/* Valor médio de Temperatura (Avg Temp) */}
               <Typography style={avgTempStyle}>
                 Avg: {temps.avgTemp} C
@@ -183,7 +183,15 @@ function Monitor() {
           <CardContent>
             {/* Cabeçalho com o título e o texto condicional */}
             <Box style={headerStyle}>
-              <Typography variant="subtitle1" gutterBottom>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                <Chunk
+                  color="inherit" // Set the color as 'inherit' so the icon inherits the color of the surrounding text
+                  style={{ fontSize: 30, marginRight: 5 }}
+                />
                 Chunk
               </Typography>
               <Typography style={{ fontSize: "1rem", fontWeight: "normal" }}>

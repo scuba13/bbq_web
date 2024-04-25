@@ -5,6 +5,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 import HomePage from './components/pages/HomePage';
 import MonitorPage from './components/pages/MonitorPage';
 import SystemPage from './components/pages/SystemPage';
+import MQTTPage from './components/pages/MQTTPage';
+import LogPage from './components/pages/LogPage';
+
 
 // Cria um tema personalizado com botões e fonte Montserrat
 const theme = createTheme({
@@ -47,6 +50,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/monitor" element={<MonitorPage />} />
           <Route path="/system" element={<SystemPage />} />
+          <Route path="/mqtt" element={<MQTTPage />} />
+          <Route path="/log" element={<LogPage />} />
         </Routes>
       </Router>
     </ThemeProvider>

@@ -19,11 +19,11 @@ function HomePage() {
         >
           Monitor
         </Button>
-        <Button variant="contained" color="primary" component={Link} to="/ha">
-          Config HA
+        <Button variant="contained" color="primary" component={Link} to="/mqtt">
+          MQTT
         </Button>
         <Button variant="contained" color="primary" component={Link} to="/log">
-          View Log
+          Log
         </Button>
         <Button variant="contained" color="primary" component={Link} to="/system">
           System Control

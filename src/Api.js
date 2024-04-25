@@ -50,7 +50,7 @@ export const getTemperatureData = async () => {
 
 
 
-export const getHAConfig = async () => {
+export const getMQTTConfig = async () => {
     try {
         const response = await fetch(`${baseUrl}getHAConfig`);
         if (!response.ok) throw new Error('Failed to fetch HA config');
@@ -60,6 +60,31 @@ export const getHAConfig = async () => {
         throw error;
     }
 };
+
+export const updateMQTTConfig = async (mqttServer, mqttPort, mqttUser, mqttPassword, isHAAvailable) => {
+    try {
+        const response = await fetch(`${baseUrl}updateHAConfig`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                mqttServer,
+                mqttPort,
+                mqttUser,
+                mqttPassword,
+                isHAAvailable
+            })
+        });
+        if (!response.ok) throw new Error('Failed to update HA config');
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating HA config:', error);
+        throw error;
+    }
+};
+
+
 
 export const getLogContent = async () => {
     try {
