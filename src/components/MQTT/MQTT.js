@@ -34,12 +34,14 @@ function MQTTConfig() {
 
   const handleUpdateConfig = async () => {
     try {
-      await updateMQTTConfig(mqttConfig);
+      const { mqttServer, mqttPort, mqttUser, mqttPassword, isHAAvailable } = mqttConfig;
+      await updateMQTTConfig(mqttServer, mqttPort, mqttUser, mqttPassword, isHAAvailable);
       alert("Config updated successfully");
     } catch (error) {
       alert(`Error updating config: ${error.message}`);
     }
   };
+  
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
