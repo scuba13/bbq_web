@@ -192,3 +192,27 @@ export const activateCure = async () => {
     throw error;
   }
 };
+
+/**
+ * Função para enviar um arquivo de firmware para atualização OTA.
+ * @param {File} file - O arquivo de firmware para upload.
+ */
+export const uploadFirmware = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append("update", file); // 'update' é o nome do campo que o servidor espera
+
+    const response = await fetch(`${baseUrl}updateFirmware`, {
+      method: 'POST',
+      body: formData, // FormData será enviado como 'multipart/form-data'
+    });
+
+    if (!response.ok) throw new Error('Failed to upload firmware');
+
+    const result = await response.text(); // Supondo que a resposta seja texto
+    return result; // Retorna a resposta do servidor
+  } catch (error) {
+    console.error('Error uploading firmware:', error);
+    throw error;
+  }
+};
