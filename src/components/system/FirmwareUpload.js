@@ -1,21 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { Button, Card, CardContent, Typography, Box } from '@mui/material';
-import { uploadFirmware } from '../../Api'; // Importa a função API que você criou
+import { uploadFirmware } from '../../Api'; // Import the API function
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt'; // Import SystemUpdateAltIcon
 
 function FirmwareUpload() {
   const [file, setFile] = useState(null);
-  const [fileName, setFileName] = useState(""); // Estado para armazenar o nome do arquivo
-  const fileInputRef = useRef(null); // Referência para o input de arquivo
+  const [fileName, setFileName] = useState(""); // State to store the file name
+  const fileInputRef = useRef(null); // Reference to the file input
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     console.log('File selected:', selectedFile);
-    setFile(selectedFile); // Armazena o primeiro arquivo selecionado
-    setFileName(selectedFile.name); // Define o nome do arquivo no estado
+    setFile(selectedFile); // Store the selected file
+    setFileName(selectedFile.name); // Set the file name in state
   };
 
   const handleChooseFileClick = () => {
-    // Simula o clique no input de arquivo
+    // Simulate a click on the file input
     fileInputRef.current.click();
   };
 
@@ -27,28 +28,29 @@ function FirmwareUpload() {
     }
     try {
       const result = await uploadFirmware(file);
-      alert(result); // Notifica o usuário do sucesso
+      alert(result); // Notify the user of success
     } catch (error) {
-      alert(`Error: ${error.message}`); // Notifica o usuário do erro
+      alert(`Error: ${error.message}`); // Notify the user of the error
     }
   };
 
   return (
     <Card variant="outlined">
       <CardContent>
-      <Typography variant="subtitle1" gutterBottom>
-         Firmware Update
+        <Typography variant="subtitle1" gutterBottom style={{ display: "flex", alignItems: "center" }}>
+          <SystemUpdateAltIcon style={{ fontSize: 30, marginRight: 5 }} />
+          Firmware Update
         </Typography>
         <Box mt={2}>
-          {/* Input de arquivo oculto */}
+          {/* Hidden file input */}
           <input
             type="file"
-            ref={fileInputRef} // Referência para o input de arquivo
+            ref={fileInputRef} // Reference to the file input
             onChange={handleFileChange}
-            accept=".bin" // Aceita apenas arquivos .bin
-            style={{ display: 'none' }} // Oculta o input de arquivo
+            accept=".bin" // Accept only .bin files
+            style={{ display: 'none' }} // Hide the file input
           />
-          {/* Botão "Choose File" */}
+          {/* "Choose File" button */}
           <Button
             variant="contained"
             color="primary"
@@ -58,7 +60,7 @@ function FirmwareUpload() {
             Choose File
           </Button>
         </Box>
-        {/* Mostrar o nome do arquivo selecionado */}
+        {/* Display the selected file name */}
         {fileName && (
           <Box mt={2}>
             <Typography variant="body1" gutterBottom>
@@ -67,7 +69,7 @@ function FirmwareUpload() {
           </Box>
         )}
         <Box mt={2}>
-          {/* Botão "Upload Firmware" */}
+          {/* "Upload Firmware" button */}
           <Button
             variant="contained"
             color="primary"

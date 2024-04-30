@@ -1,54 +1,33 @@
-import React, { useState } from 'react';
-import { Box, Button, Card, CardContent, TextField, Typography } from '@mui/material';
-import { setTempCalibration, resetSystem, activateCure } from '../../Api';
+import React from 'react';
+import { Box, Button, Card, CardContent, Typography } from '@mui/material';
+import { resetSystem, activateCure } from '../../Api';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 function System() {
-  const [tempCalibrationValue, setTempCalibrationValue] = useState("");
-
-  const handleSetTempCalibration = async () => {
-    try {
-      const message = await setTempCalibration(tempCalibrationValue);
-      alert(message); // Notify user of success
-    } catch (error) {
-      alert(`Error: ${error.message}`); // Notify user of error
-    }
-  };
-
   const handleResetSystem = async () => {
     try {
       const message = await resetSystem();
-      alert(message); // Notify user of success
+      alert(message);
     } catch (error) {
-      alert(`Error: ${error.message}`); // Notify user of error
+      alert(`Error: ${error.message}`);
     }
   };
 
   const handleActivateCure = async () => {
     try {
       const message = await activateCure();
-      alert(message); // Notify user of success
+      alert(message);
     } catch (error) {
-      alert(`Error: ${error.message}`); // Notify user of error
+      alert(`Error: ${error.message}`);
     }
   };
 
   return (
     <Card variant="outlined">
       <CardContent>
-        <Typography variant="subtitle1" gutterBottom>
-          System Controls
+        <Typography variant="subtitle1" gutterBottom style={{ display: "flex", alignItems: "center" }}>
+          <SettingsIcon style={{ fontSize: 30, marginRight: 5 }} /> System
         </Typography>
-        <TextField
-          type="number"
-          value={tempCalibrationValue}
-          onChange={(e) => setTempCalibrationValue(e.target.value)}
-          inputProps={{ min: -20, max: 20 }}
-          fullWidth
-          margin="normal"
-        />
-        <Button variant="contained" onClick={handleSetTempCalibration} fullWidth>
-          Set Calibration
-        </Button>
         <Box mt={2}>
           <Button variant="contained" color="primary" onClick={handleResetSystem} fullWidth>
             Reset System

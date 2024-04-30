@@ -1,7 +1,8 @@
 import React from "react";
 import { Container, Button } from "@mui/material";
 import { Link } from "react-router-dom";
-import Monitor from "../monitor/Monitor"; // Importar o componente Monitor
+import Monitor from "../monitor/Monitor"; // Existing import
+import AIGeneratedContent from "../monitor/AI"; // Import the new AI content component
 import PageTitle from "../utils/PageTitle";
 import Watermark from "../utils/Watermark";
 
@@ -15,7 +16,10 @@ function MonitorPage() {
           Home
         </Button>
       </div>
-      <Monitor /> {/* Renderizar o componente Monitor */}
+      <Monitor />
+      <div style={{ marginTop: "40px" }}> {/* Add spacing between the components */}
+        <AIGeneratedContent /> {/* Render the new AI-generated content component */}
+      </div>
     </Container>
   );
 }

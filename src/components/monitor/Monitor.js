@@ -22,6 +22,12 @@ function Monitor() {
     proteinTempSet: "--",
     relayState: "--",
     avgTemp: "--",
+    minBBQTemp: "--",
+    maxBBQTemp: "--",
+    minPrtTemp: "--",
+    maxPrtTemp: "--",
+    minCaliTemp: "--",
+    maxCaliTemp: "--",
   });
 
   const [bbqTemp, setBbqTemp] = useState("");
@@ -39,6 +45,12 @@ function Monitor() {
         proteinTempSet: data.proteinTempSet > 0 ? data.proteinTempSet : "--",
         avgTemp: data.avgTemp > 0 ? data.avgTemp : "--",
         relayState: data.relayState === "ON" ? "ON" : "OFF",
+        minBBQTemp: data.minBBQTemp ,
+        maxBBQTemp: data.maxBBQTemp ,
+        minPrtTemp: data.minPrtTemp ,
+        maxPrtTemp: data.maxPrtTemp ,
+        minCaliTemp: data.minCaliTemp ,
+        maxCaliTemp: data.maxCaliTemp ,
       };
       setTemps(mappedData);
     };
@@ -51,21 +63,32 @@ function Monitor() {
 
   const handleSetBbqTemp = async () => {
     try {
+      // Verifica se bbqTemp está dentro da faixa permitida (minBBQTemp a maxBBQTemp)
+      if (bbqTemp < temps.minBBQTemp || bbqTemp > temps.maxBBQTemp) {
+        throw new Error(`BBQ temperature must be between ${temps.minBBQTemp}°C and ${temps.maxBBQTemp}°C`);
+      }
       const message = await setTemperature(bbqTemp);
       alert(message);
     } catch (error) {
       alert(`Error: ${error.message}`);
     }
   };
-
+  
+  
   const handleSetProteinTemp = async () => {
     try {
+      // Verifica se proteinTempValue está dentro da faixa permitida
+      if (proteinTempValue < temps.minPrtTemp || proteinTempValue > temps.maxPrtTemp) {
+        throw new Error(`Chunk temperature must be between ${temps.minPrtTemp}°C and ${temps.maxPrtTemp}°C`);
+      }
+  
       const message = await setProteinTemp(proteinTempValue);
       alert(message);
     } catch (error) {
       alert(`Error: ${error.message}`);
     }
   };
+  
 
   const getColorForTemperatureComparison = (current, set) => {
     if (current === "--" || set === "--") return "inherit"; // No color change if no data
@@ -109,12 +132,6 @@ function Monitor() {
     }
   };
 
-  // Estilo para a Temperatura Definida
-  // const setTempStyle = {
-  //   fontSize: '2rem', // Aumenta o tamanho da fonte
-  //   fontWeight: 'bold', // Deixa o texto em negrito
-  //   color: 'gray', // Define a cor do texto (opcional)
-  // };
 
   return (
     <Grid container spacing={2}>

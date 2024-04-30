@@ -1,31 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, Typography } from "@mui/material";
-import { getLogContent } from "../../Api";
-import NotesOutlinedIcon from "@mui/icons-material/NotesOutlined";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, Typography } from '@mui/material';
+import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
+import { getLogContent } from '../../Api';
 
 function Log() {
-  const [logContent, setLogContent] = useState("");
+  const [logContent, setLogContent] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Função para buscar o conteúdo do log e atualizar o estado
     const fetchLogContent = async () => {
       try {
         const content = await getLogContent();
         setLogContent(content);
       } catch (error) {
-        console.error("Error fetching log content:", error);
+        console.error('Error fetching log content:', error);
+        setError('Could not fetch log content.');
       }
     };
 
-    // Chamar a função inicialmente
     fetchLogContent();
-
-    // Configurar a intervalo para buscar o log a cada 1 segundo
     const intervalId = setInterval(fetchLogContent, 1000);
 
-    // Limpar o intervalo quando o componente for desmontado para evitar vazamentos de memória
     return () => clearInterval(intervalId);
-  }, []); // O array vazio garante que o useEffect seja executado apenas uma vez após a montagem do componente
+  }, []);
 
   return (
     <Card variant="outlined">
@@ -33,16 +30,19 @@ function Log() {
         <Typography
           variant="subtitle1"
           gutterBottom
-          style={{ display: "flex", alignItems: "center" }}
+          sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
         >
-          <NotesOutlinedIcon style={{ marginRight: 5 }} />
+          <NotesOutlinedIcon sx={{ mr: 1 }} />
           Log Content
         </Typography>
 
-        {/* Exibir o conteúdo do log */}
-        <Typography component="pre" style={{ whiteSpace: "pre-wrap" }}>
-          {logContent}
-        </Typography>
+        {error ? (
+          <Typography color="error">{error}</Typography>
+        ) : (
+          <Typography component="pre" sx={{ whiteSpace: 'pre-wrap' }}>
+            {logContent || "No log content available."}
+          </Typography>
+        )}
       </CardContent>
     </Card>
   );
