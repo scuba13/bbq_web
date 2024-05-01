@@ -301,3 +301,66 @@ export const updateTempConfig = async (
 const isValidTemperature = (temperature) => {
   return typeof temperature === "number" && !isNaN(temperature);
 };
+
+
+// // Função para obter a configuração de AI
+// export const getAiConfig = async () => {
+//   try {
+//     const response = await fetch(`${baseUrl}getAiConfig`);
+//     if (!response.ok)
+//       throw new Error("Falha ao buscar configuração de AI");
+//     return await response.json();
+//   } catch (error) {
+//     console.error("Erro ao carregar configuração de AI:", error);
+//     throw error;
+//   }
+// };
+
+export const getAiConfig = async () => {
+  try {
+    
+    // Valores simulados
+    const aiKey = "AIzaSyDf9K8Ya3djc2PO0YMmJmADRhuYFHMrgbc";
+    const tip = "Me de 1 dica e 1 receita de Churrasco americano no total de 200 palavras. Estruture o texto com Cabecalho, Dica, Cabecalho com o nome da receita, Receita.";
+
+    return { aiKey, tip };
+  } catch (error) {
+    console.error("Erro ao carregar configuração de AI:", error);
+    throw error;
+  }
+};
+
+
+
+// Function to update AI configuration
+export const updateAIConfig = async (aiKey, tip) => {
+  try {
+    // Validate input parameters
+    if (!aiKey || typeof aiKey !== 'string') {
+      throw new Error("Invalid or missing 'aiKey'");
+    }
+    if (!tip || typeof tip !== 'string') {
+      throw new Error("Invalid or missing 'tip'");
+    }
+
+    // Manually construct the POST body data as a string
+    const body = `aiKey=${encodeURIComponent(aiKey)}&tip=${encodeURIComponent(tip)}`;
+
+    // Sending the POST request to the server
+    const response = await fetch(`${baseUrl}/updateAiConfig`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    });
+
+    // Check the response
+    if (!response.ok) throw new Error("Failed to update AI configuration");
+
+    return "AI configuration updated successfully.";
+  } catch (error) {
+    console.error("Error updating AI Configuration:", error);
+    throw error;
+  }
+};

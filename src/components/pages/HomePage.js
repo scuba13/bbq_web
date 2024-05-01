@@ -26,7 +26,7 @@ function HomePage() {
           Log
         </Button>
         <Button variant="contained" color="primary" component={Link} to="/system">
-          System Control
+          System
         </Button>
       </div>
       <img
