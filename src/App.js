@@ -7,14 +7,13 @@ import MonitorPage from './components/pages/MonitorPage';
 import SystemPage from './components/pages/SystemPage';
 import MQTTPage from './components/pages/MQTTPage';
 import LogPage from './components/pages/LogPage';
+import WeatherPage from './components/pages/WeatherPage';
 
-
-// Cria um tema personalizado com botões e fonte Montserrat
 const theme = createTheme({
   palette: {
     mode: 'dark', // Ativa o modo escuro
     background: {
-      default: '#0D0D0D', // Um preto muito escuro como fundo padrão
+      default: '#000', // Preto
       paper: '#1e1e1e',
     },
     text: {
@@ -24,8 +23,23 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: 'Montserrat, sans-serif',
+    // Adicionando estilo para elementos <code>
+    code: {
+      fontFamily: 'source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace',
+    },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: `
+        body {
+          -webkit-font-smoothing: antialiased;  // Suavização de fonte para WebKit (Chrome, Safari)
+          -moz-osx-font-smoothing: grayscale;  // Suavização de fonte para Firefox no macOS
+        }
+        code {
+          font-family: 'source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace';
+        }
+      `,
+    },
     MuiButton: {
       styleOverrides: {
         root: {
@@ -52,6 +66,7 @@ function App() {
           <Route path="/system" element={<SystemPage />} />
           <Route path="/mqtt" element={<MQTTPage />} />
           <Route path="/log" element={<LogPage />} />
+          <Route path="/weather" element={<WeatherPage />} />
         </Routes>
       </Router>
     </ThemeProvider>

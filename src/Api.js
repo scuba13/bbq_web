@@ -304,32 +304,32 @@ const isValidTemperature = (temperature) => {
 
 
 // Função para obter a configuração de AI
-export const getAiConfig = async () => {
-  try {
-    const response = await fetch(`${baseUrl}getAiConfig`);
-    if (!response.ok)
-      throw new Error("Falha ao buscar configuração de AI");
-    return await response.json();
-  } catch (error) {
-    console.error("Erro ao carregar configuração de AI:", error);
-    throw error;
-  }
-};
-
-// MOCK AI Config
 // export const getAiConfig = async () => {
 //   try {
-    
-//     // Valores simulados
-//     const aiKey = "AIzaSyDf9K8Ya3djc2PO0YMmJmADRhuYFHMrgbc";
-//     const tip = "Me de 1 dica e 1 receita de Churrasco americano no total de 200 palavras. Estruture o texto com Cabecalho, Dica, Cabecalho com o nome da receita, Receita.";
-
-//     return { aiKey, tip };
+//     const response = await fetch(`${baseUrl}getAiConfig`);
+//     if (!response.ok)
+//       throw new Error("Falha ao buscar configuração de AI");
+//     return await response.json();
 //   } catch (error) {
 //     console.error("Erro ao carregar configuração de AI:", error);
 //     throw error;
 //   }
 // };
+
+// MOCK AI Config
+export const getAiConfig = async () => {
+  try {
+    
+    // Valores simulados
+    const aiKey = "AIzaSyDf9K8Ya3djc2PO0YMmJmADRhuYFHMrgbc";
+    const tip = "Me de 1 dica e 1 receita de Churrasco americano no total de 200 palavras. Estruture o texto com Cabecalho, Dica, Cabecalho com o nome da receita, Receita.";
+
+    return { aiKey, tip };
+  } catch (error) {
+    console.error("Erro ao carregar configuração de AI:", error);
+    throw error;
+  }
+};
 
 
 

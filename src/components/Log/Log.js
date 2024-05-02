@@ -1,51 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, Typography } from '@mui/material';
-import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
-import { getLogContent } from '../../Api';
+import { Typography, Card, CardContent } from '@mui/material';
 
-function Log() {
-  const [logContent, setLogContent] = useState('');
-  const [error, setError] = useState(null);
+function PageTitle({ title, subtitle }) {
+  const [position, setPosition] = useState(null);
+  const [weather, setWeather] = useState(null);
 
   useEffect(() => {
-    const fetchLogContent = async () => {
-      try {
-        const content = await getLogContent();
-        setLogContent(content);
-      } catch (error) {
-        console.error('Error fetching log content:', error);
-        setError('Could not fetch log content.');
-      }
-    };
-
-    fetchLogContent();
-    const intervalId = setInterval(fetchLogContent, 1000);
-
-    return () => clearInterval(intervalId);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setPosition({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error('Error obtaining location', error);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
   }, []);
 
-  return (
-    <Card variant="outlined">
-      <CardContent>
-        <Typography
-          variant="subtitle1"
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
-        >
-          <NotesOutlinedIcon sx={{ mr: 1 }} />
-          Log Content
-        </Typography>
+  useEffect(() => {
+    if (position) {
+      const API_KEY = '3bb00f8d6c2bb1b3e5757d2ea60de0b4'; // Substitua pela sua chave de API real
+      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${position.lat}&lon=${position.lon}&appid=${API_KEY}&units=metric`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          setWeather(data);
+        })
+        .catch(error => console.error('Error fetching weather data:', error));
+    }
+  }, [position]);
 
-        {error ? (
-          <Typography color="error">{error}</Typography>
-        ) : (
-          <Typography component="pre" sx={{ whiteSpace: 'pre-wrap' }}>
-            {logContent || "No log content available."}
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', justifyContent: 'center', padding: '20px' }}>
+      <div style={{ textAlign: 'center' }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+          {title}
+        </Typography>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+          {subtitle}
+        </Typography>
+      </div>
+      {weather && (
+        <Card variant="outlined" style={{ position: 'absolute', top: '20px', right: '20px', maxWidth: '250px', backgroundColor: '#333', color: 'white' }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Weather in {weather.name}
+            </Typography>
+            <Typography variant="subtitle1">
+              {weather.weather[0].description}
+            </Typography>
+            <Typography variant="subtitle1">
+              Temp: {weather.main.temp}°C
+            </Typography>
+            <Typography variant="subtitle1">
+              Humidity: {weather.main.humidity}%
+            </Typography>
+            <Typography variant="subtitle1">
+              Wind: {weather.wind.speed} m/s
+            </Typography>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
 
-export default Log;
+export default PageTitle;

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Container, Button } from "@mui/material";
 import PageTitle from "../utils/PageTitle"; // Importa o componente de título
+//import WeatherComponent from "../utils/Weather"; // Importa o componente de clima
 
 function HomePage() {
   return (
@@ -9,7 +10,8 @@ function HomePage() {
       maxWidth="sm"
       style={{ textAlign: "center", padding: "40px 0", position: "relative" }}
     >
-      <PageTitle title="LazyQ Inc." subtitle="LazyQ-Display" />
+      <PageTitle title="LazyQ Inc." subtitle="We Smoke While Y'All Snooze" />
+  
       <div>
         <Button
           variant="contained"
@@ -25,9 +27,23 @@ function HomePage() {
         <Button variant="contained" color="primary" component={Link} to="/log">
           Log
         </Button>
-        <Button variant="contained" color="primary" component={Link} to="/system">
+        <Button
+          variant="contained"
+          color="primary"
+          component={Link}
+          to="/system"
+        >
           System
         </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          component={Link}
+          to="/weather"
+        >
+          Weather
+        </Button>
+        
       </div>
       <img
         src="/logo_gato.webp"

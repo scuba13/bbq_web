@@ -17,7 +17,7 @@ function AIGeneratedContent() {
   useEffect(() => {
     getAiConfig().then(config => {
       setAiKey(config.aiKey);
-      setDefaultTip(config.tip);  // Supondo que o campo se chama 'tip'
+      setDefaultTip(config.tip);
     }).catch(err => {
       console.error('Failed to fetch AI key:', err);
       setError('Could not load AI configuration.');
@@ -79,11 +79,11 @@ function AIGeneratedContent() {
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
             <HelpOutlineIcon sx={{ mr: 1 }} /> {/* Icon added here */}
-            Ask Me
+            Ask Me - Powered by Google AI
           </Typography>
           <form onSubmit={handleSubmit}>
-            <TextField fullWidth variant="outlined" label="Write here to generate content..." value={prompt} onChange={handleInputChange} sx={{ mb: 2 }} />
-            <Button type="submit" variant="contained" color="primary">Generate</Button>
+            <TextField fullWidth variant="outlined" label="Write here..." value={prompt} onChange={handleInputChange} sx={{ mb: 2 }} />
+            <Button type="submit" variant="contained" color="primary">Send</Button>
           </form>
           {content && <Typography component="pre" sx={{ whiteSpace: 'pre-wrap', mt: 2 }}>{content}</Typography>}
         </CardContent>
@@ -92,7 +92,7 @@ function AIGeneratedContent() {
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <AutoStoriesIcon sx={{ mr: 1 }} />
-            AI Tips - Powered by Google AI
+            BBQ AI Tips - Powered by Google AI
             <Button onClick={toggleContent} sx={{ marginLeft: 'auto' }}>{isOpen ? 'Hide' : 'Show'}</Button>
           </Typography>
           {isOpen && (error ? <Typography color="error">{error}</Typography> : <Typography component="pre" sx={{ whiteSpace: 'pre-wrap' }}>{autoContent || "No auto content available at the moment."}</Typography>)}
