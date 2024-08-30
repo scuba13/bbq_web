@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getTemperatureData, setTemperature, setProteinTemp } from "../../Api";
+import { getTemperatureData, setTemperatureConfig } from "../../Api";
 import {
   Card,
   CardContent,
@@ -36,7 +36,6 @@ function Monitor() {
   useEffect(() => {
     const fetchTemps = async () => {
       const data = await getTemperatureData();
-      // Mapping the API response to display '--' if the value is zero
       const mappedData = {
         ...data,
         currentTemp: data.currentTemp > 0 ? data.currentTemp : "--",
@@ -45,12 +44,12 @@ function Monitor() {
         proteinTempSet: data.proteinTempSet > 0 ? data.proteinTempSet : "--",
         avgTemp: data.avgTemp > 0 ? data.avgTemp : "--",
         relayState: data.relayState === "ON" ? "ON" : "OFF",
-        minBBQTemp: data.minBBQTemp ,
-        maxBBQTemp: data.maxBBQTemp ,
-        minPrtTemp: data.minPrtTemp ,
-        maxPrtTemp: data.maxPrtTemp ,
-        minCaliTemp: data.minCaliTemp ,
-        maxCaliTemp: data.maxCaliTemp ,
+        minBBQTemp: data.minBBQTemp,
+        maxBBQTemp: data.maxBBQTemp,
+        minPrtTemp: data.minPrtTemp,
+        maxPrtTemp: data.maxPrtTemp,
+        minCaliTemp: data.minCaliTemp,
+        maxCaliTemp: data.maxCaliTemp,
       };
       setTemps(mappedData);
     };
@@ -61,28 +60,24 @@ function Monitor() {
     return () => clearInterval(intervalId);
   }, []);
 
-  const handleSetBbqTemp = async () => {
+  const handleSetTemperatureConfig = async () => {
     try {
-      // Verifica se bbqTemp está dentro da faixa permitida (minBBQTemp a maxBBQTemp)
-      if (bbqTemp < temps.minBBQTemp || bbqTemp > temps.maxBBQTemp) {
+      // Verifica se bbqTemp está dentro da faixa permitida para BBQ
+      if (parseFloat(bbqTemp) < parseFloat(temps.minBBQTemp) || parseFloat(bbqTemp) > parseFloat(temps.maxBBQTemp)) {
         throw new Error(`BBQ temperature must be between ${temps.minBBQTemp}°C and ${temps.maxBBQTemp}°C`);
       }
-      const message = await setTemperature(bbqTemp);
-      alert(message);
-    } catch (error) {
-      alert(`Error: ${error.message}`);
-    }
-  };
-  
-  
-  const handleSetProteinTemp = async () => {
-    try {
-      // Verifica se proteinTempValue está dentro da faixa permitida
-      if (proteinTempValue < temps.minPrtTemp || proteinTempValue > temps.maxPrtTemp) {
-        throw new Error(`Chunk temperature must be between ${temps.minPrtTemp}°C and ${temps.maxPrtTemp}°C`);
+      
+      // Verifica se proteinTempValue está dentro da faixa permitida para proteína
+      if (parseFloat(proteinTempValue) < parseFloat(temps.minPrtTemp) || parseFloat(proteinTempValue) > parseFloat(temps.maxPrtTemp)) {
+        throw new Error(`Protein temperature must be between ${temps.minPrtTemp}°C and ${temps.maxPrtTemp}°C`);
       }
   
-      const message = await setProteinTemp(proteinTempValue);
+      // Define minCaliTemp e maxCaliTemp como vazios independentemente dos valores atuais
+      const minCaliTemp = "";
+      const maxCaliTemp = "";
+  
+      // Chama a função combinada para definir as temperaturas
+      const message = await setTemperatureConfig(bbqTemp, proteinTempValue, minCaliTemp, maxCaliTemp);
       alert(message);
     } catch (error) {
       alert(`Error: ${error.message}`);
@@ -91,37 +86,35 @@ function Monitor() {
   
 
   const getColorForTemperatureComparison = (current, set) => {
-    if (current === "--" || set === "--") return "inherit"; // No color change if no data
+    if (current === "--" || set === "--") return "inherit"; 
     if (current > set) return "red";
     if (current < set) return "blue";
     return "green";
   };
 
   const tempTextStyle = {
-    fontSize: "4rem", // Aumenta o tamanho da fonte das temperaturas
-    fontWeight: "bold", // Deixa o texto em negrito
-    display: "flex", // Usa flexbox para alinhar o conteúdo
-    justifyContent: "center", // Centraliza o conteúdo horizontalmente
-    alignItems: "center", // Centraliza o conteúdo verticalmente
-    height: "100px", // Define uma altura para o container para que fique centralizado verticalmente
+    fontSize: "4rem",
+    fontWeight: "bold",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100px",
   };
 
   const headerStyle = {
     display: "flex",
-    justifyContent: "space-between", // Distribui o espaço igualmente
-    alignItems: "center", // Alinha itens verticalmente
+    justifyContent: "space-between",
+    alignItems: "center",
   };
 
   const avgTempStyle = {
-    fontSize: "1rem", // Ajuste para o tamanho da fonte do avgTemp
-    fontWeight: "normal", // Ajuste para o peso da fonte
-    // Outros estilos podem ser adicionados aqui conforme necessário
+    fontSize: "1rem",
+    fontWeight: "normal",
   };
 
-  // Função para determinar o texto de status do Chunk
   const getChunkStatus = () => {
     if (temps.proteinTempSet === "--") {
-      return "---"; // Retorna isto se algum dos valores não estiver disponível
+      return "---";
     }
     if (temps.proteinTemp > temps.proteinTempSet) {
       return "Charcoal Special";
@@ -132,13 +125,11 @@ function Monitor() {
     }
   };
 
-
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} sm={6}>
         <Card variant="outlined">
           <CardContent>
-            {/* Cabeçalho do Card com BBQ e Avg Temp, agora incluindo ícone de estado do relé */}
             <Box style={headerStyle}>
               <Typography
                 variant="subtitle1"
@@ -148,19 +139,17 @@ function Monitor() {
                 {temps.relayState === "ON" ? (
                   <FireIcon
                     color="error"
-                    style={{ fontSize: 30, marginRight: 5 }} // Increase size and add left margin
+                    style={{ fontSize: 30, marginRight: 5 }}
                   />
                 ) : (
-                  <FireOffIcon style={{ fontSize: 30, marginRight: 5 }} /> // Same adjustment for the "OFF" icon
+                  <FireOffIcon style={{ fontSize: 30, marginRight: 5 }} />
                 )}
-                BBQ {/* Space added here */}
+                BBQ
               </Typography>
-              {/* Valor médio de Temperatura (Avg Temp) */}
               <Typography style={avgTempStyle}>
                 Avg: {temps.avgTemp} C
               </Typography>
             </Box>
-            {/* Temperatura Atual */}
             <Typography
               component="h2"
               style={{
@@ -173,22 +162,16 @@ function Monitor() {
             >
               {temps.currentTemp} C
             </Typography>
-
-            {/* Temperatura Definida */}
             <Typography color="textSecondary">{temps.setTemp} C</Typography>
-
-            {/* Campo de Entrada para BBQ Temp */}
             <TextField
               type="number"
               value={bbqTemp}
               onChange={(e) => setBbqTemp(e.target.value)}
-              inputProps={{ min: 30, max: 200 }}
+              inputProps={{ min: temps.minBBQTemp, max: temps.maxBBQTemp }}
               margin="normal"
               fullWidth
             />
-
-            {/* Botão para definir a temperatura */}
-            <Button variant="contained" onClick={handleSetBbqTemp} fullWidth>
+            <Button variant="contained" onClick={handleSetTemperatureConfig} fullWidth>
               Set BBQ Temp
             </Button>
           </CardContent>
@@ -198,7 +181,6 @@ function Monitor() {
       <Grid item xs={12} sm={6}>
         <Card variant="outlined">
           <CardContent>
-            {/* Cabeçalho com o título e o texto condicional */}
             <Box style={headerStyle}>
               <Typography
                 variant="subtitle1"
@@ -206,7 +188,7 @@ function Monitor() {
                 style={{ display: "flex", alignItems: "center" }}
               >
                 <Chunk
-                  color="inherit" // Set the color as 'inherit' so the icon inherits the color of the surrounding text
+                  color="inherit"
                   style={{ fontSize: 30, marginRight: 5 }}
                 />
                 Chunk
@@ -215,7 +197,6 @@ function Monitor() {
                 {getChunkStatus()}
               </Typography>
             </Box>
-            {/* Temperatura Atual do Chunk */}
             <Typography
               component="h2"
               style={{
@@ -228,23 +209,20 @@ function Monitor() {
             >
               {temps.proteinTemp} C
             </Typography>
-            {/* Temperatura Definida do Chunk */}
             <Typography color="textSecondary">
               {temps.proteinTempSet} C
             </Typography>
-            {/* Campo de Entrada para a Temperatura do Chunk */}
             <TextField
               type="number"
               value={proteinTempValue}
               onChange={(e) => setProteinTempValue(e.target.value)}
-              inputProps={{ min: 40, max: 99 }}
+              inputProps={{ min: temps.minPrtTemp, max: temps.maxPrtTemp }}
               margin="normal"
               fullWidth
             />
-            {/* Botão para Definir a Temperatura do Chunk */}
             <Button
               variant="contained"
-              onClick={handleSetProteinTemp}
+              onClick={handleSetTemperatureConfig}
               fullWidth
             >
               Set Protein Temp
@@ -252,7 +230,6 @@ function Monitor() {
           </CardContent>
         </Card>
       </Grid>
-      {/* Outros Grid items conforme necessário */}
     </Grid>
   );
 }

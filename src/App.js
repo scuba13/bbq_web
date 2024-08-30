@@ -7,7 +7,7 @@ import MonitorPage from './components/pages/MonitorPage';
 import SystemPage from './components/pages/SystemPage';
 import MQTTPage from './components/pages/MQTTPage';
 import LogPage from './components/pages/LogPage';
-import WeatherPage from './components/pages/WeatherPage';
+
 
 const theme = createTheme({
   palette: {
@@ -66,7 +66,6 @@ function App() {
           <Route path="/system" element={<SystemPage />} />
           <Route path="/mqtt" element={<MQTTPage />} />
           <Route path="/log" element={<LogPage />} />
-          <Route path="/weather" element={<WeatherPage />} />
         </Routes>
       </Router>
     </ThemeProvider>

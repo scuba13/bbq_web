@@ -1,74 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, CardContent } from '@mui/material';
+import { Typography, Card, CardContent, CircularProgress, Box } from '@mui/material';
+import DescriptionIcon from '@mui/icons-material/Description';
+import { getLogContent } from '../../Api';
 
-function PageTitle({ title, subtitle }) {
-  const [position, setPosition] = useState(null);
-  const [weather, setWeather] = useState(null);
+function LogCard() {
+  const [logContent, setLogContent] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setPosition({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error('Error obtaining location', error);
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
-    }
+    const fetchLogContent = async () => {
+      try {
+        const content = await getLogContent();
+        setLogContent(content);
+      } catch (error) {
+        setError('Unable to fetch log content.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLogContent();
   }, []);
 
-  useEffect(() => {
-    if (position) {
-      const API_KEY = '3bb00f8d6c2bb1b3e5757d2ea60de0b4'; // Substitua pela sua chave de API real
-      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${position.lat}&lon=${position.lon}&appid=${API_KEY}&units=metric`;
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          setWeather(data);
-        })
-        .catch(error => console.error('Error fetching weather data:', error));
-    }
-  }, [position]);
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ textAlign: 'center' }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-          {title}
+    <Card variant="outlined" style={{ maxWidth: '800px', margin: '20px auto', backgroundColor: '#333', color: 'white' }}>
+      <CardContent>
+        <Typography variant="subtitle1" gutterBottom style={{ display: "flex", alignItems: "center" }}>
+          <DescriptionIcon style={{ fontSize: 30, marginRight: 5 }} /> Log Content
         </Typography>
-        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
-          {subtitle}
-        </Typography>
-      </div>
-      {weather && (
-        <Card variant="outlined" style={{ position: 'absolute', top: '20px', right: '20px', maxWidth: '250px', backgroundColor: '#333', color: 'white' }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Weather in {weather.name}
-            </Typography>
-            <Typography variant="subtitle1">
-              {weather.weather[0].description}
-            </Typography>
-            <Typography variant="subtitle1">
-              Temp: {weather.main.temp}°C
-            </Typography>
-            <Typography variant="subtitle1">
-              Humidity: {weather.main.humidity}%
-            </Typography>
-            <Typography variant="subtitle1">
-              Wind: {weather.wind.speed} m/s
-            </Typography>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        {loading && (
+          <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+            <CircularProgress />
+          </Box>
+        )}
+        {error && (
+          <Typography variant="body1" color="error" align="center">
+            {error}
+          </Typography>
+        )}
+        {!loading && !error && (
+          <Typography variant="body1" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {logContent}
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
-export default PageTitle;
+export default LogCard;

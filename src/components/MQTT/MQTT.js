@@ -35,7 +35,11 @@ function MQTTConfig() {
   const handleUpdateConfig = async () => {
     try {
       const { mqttServer, mqttPort, mqttUser, mqttPassword, isHAAvailable } = mqttConfig;
-      await updateMQTTConfig(mqttServer, mqttPort, mqttUser, mqttPassword, isHAAvailable);
+  
+      // Converte mqttPort para número, se não for
+      const port = Number(mqttPort);
+  
+      await updateMQTTConfig(mqttServer, port, mqttUser, mqttPassword, isHAAvailable);
       alert("Config updated successfully");
     } catch (error) {
       alert(`Error updating config: ${error.message}`);

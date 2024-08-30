@@ -35,15 +35,7 @@ function HomePage() {
         >
           System
         </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          to="/weather"
-        >
-          Weather
-        </Button>
-        
+       
       </div>
       <img
         src="/logo_gato.webp"

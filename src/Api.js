@@ -1,13 +1,24 @@
-//const baseUrl = "http://bbq.local/";
-const baseUrl = "/";
+const baseUrl = "http://bbq.local";
+//const baseUrl = "/";
 
 // Função para buscar dados do servidor do endpoint /monitor
 export const getTemperatureData = async () => {
   try {
-    const response = await fetch(`${baseUrl}monitor`);
+    const response = await fetch(`${baseUrl}/api/v1/monitor`, {
+      //mode: 'cors' // Adiciona o modo 'cors'
+    });
     console.log("Response from monitor endpoint:", response);
-    const data = await response.json();
-    console.log("Data received from monitor endpoint:", data);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching data: ${response.statusText}`);
+    }
+    
+    const responseData = await response.json();
+    console.log("Data received from monitor endpoint:", responseData);
+
+    // Extraindo os dados do campo 'data'
+    const data = responseData.data;
+
     return {
       currentTemp: data.currentTemp,
       setTemp: data.setTemp,
@@ -15,55 +26,45 @@ export const getTemperatureData = async () => {
       proteinTempSet: data.proteinTempSet,
       relayState: data.relayState,
       avgTemp: data.avgTemp,
+      caliTemp: data.caliTemp,
+      caliTempP: data.caliTempP,
       minBBQTemp: data.minBBQTemp,
       maxBBQTemp: data.maxBBQTemp,
       minPrtTemp: data.minPrtTemp,
       maxPrtTemp: data.maxPrtTemp,
       minCaliTemp: data.minCaliTemp,
       maxCaliTemp: data.maxCaliTemp,
+      minCaliTempP: data.minCaliTempP,
+      maxCaliTempP: data.maxCaliTempP,
+      internalTemp: data.internalTemp
     };
   } catch (error) {
     console.error("Error fetching data from monitor endpoint:", error);
-    throw error;
+    throw error; // Aqui estava o erro, agora corrigido
   }
 };
-
-// // Funções para buscar dados do servidor MOCK
-// export const getTemperatureData = async () => {
-//   try {
-//     // Gerando dados aleatórios para simular uma resposta dinâmica do servidor
-//     const mockData = {
-//       currentTemp: Math.floor(Math.random() * 100),
-//       setTemp: Math.floor(Math.random() * 100),
-//       proteinTemp: Math.floor(Math.random() * 100),
-//       proteinTempSet: Math.floor(Math.random() * 100),
-//       relayState: Math.random() > 0.5 ? "ON" : "OFF",
-//       avgTemp: Math.floor(Math.random() * 100),
-//     };
-
-//     // Simulando um pequeno atraso de resposta
-//     await new Promise((resolve) => setTimeout(resolve, 1000));
-
-//     console.log("Mock Response from getTemperatureData:", mockData);
-//     return mockData;
-//   } catch (error) {
-//     console.error("Error fetching temperature data:", error);
-//     throw error;
-//   }
-// };
 
 export const getMQTTConfig = async () => {
   try {
-    const response = await fetch(`${baseUrl}getMQTTConfig`);
-    if (!response.ok) throw new Error("Failed to fetch HA config");
-    return await response.json();
+    const response = await fetch(`${baseUrl}/api/v1/mqtt/config`);
+    if (!response.ok) throw new Error("Failed to fetch MQTT config");
+    const responseData = await response.json();
+     // Extraindo os dados do campo 'data'
+     const data = responseData.data;
+    return {
+      mqttServer: data.mqttServer,
+      mqttPort: data.mqttPort,
+      mqttUser: data.mqttUser,
+      mqttPassword: data.mqttPassword,
+      isHAAvailable: data.isHAAvailable,
+    };
   } catch (error) {
-    console.error("Error loading HA config:", error);
+    console.error("Error loading MQTT config:", error);
     throw error;
   }
 };
 
-// Function to update MQTT configuration
+// Função para atualizar a configuração MQTT
 export const updateMQTTConfig = async (
   mqttServer,
   mqttPort,
@@ -72,11 +73,11 @@ export const updateMQTTConfig = async (
   isHAAvailable
 ) => {
   try {
-    // Validate input parameters
+    // Validação dos parâmetros de entrada
     if (!mqttServer || typeof mqttServer !== "string") {
       throw new Error("Invalid or missing 'mqttServer'");
     }
-    if (!mqttPort || typeof mqttPort !== "number") {
+    if (!Number.isInteger(mqttPort) || mqttPort <= 0 || mqttPort > 65535) {
       throw new Error("Invalid or missing 'mqttPort'");
     }
     if (!mqttUser || typeof mqttUser !== "string") {
@@ -89,99 +90,73 @@ export const updateMQTTConfig = async (
       throw new Error("Invalid or missing 'isHAAvailable'");
     }
 
-    // Manually construct the POST body data as a string
+    // Convertendo mqttPort para um número se necessário
+    const port = Number(mqttPort);
+
+    // Construindo o corpo da requisição manualmente como string
     const body =
       `mqttServer=${encodeURIComponent(mqttServer)}&` +
-      `mqttPort=${encodeURIComponent(mqttPort)}&` +
+      `mqttPort=${encodeURIComponent(port)}&` +
       `mqttUser=${encodeURIComponent(mqttUser)}&` +
       `mqttPassword=${encodeURIComponent(mqttPassword)}&` +
       `isHAAvailable=${encodeURIComponent(isHAAvailable)}`;
 
-    // Sending the POST request to the server
-    const response = await fetch(`${baseUrl}updateMQTTConfig`, {
-      method: "POST",
+    // Enviando a requisição POST para o servidor
+    const response = await fetch(`${baseUrl}/api/v1/mqtt/config`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: body,
     });
 
-    // Check the response
-    if (!response.ok) throw new Error("Failed to update HA configuration");
+    // Verificação da resposta
+    if (!response.ok) throw new Error("Failed to update MQTT configuration");
 
-    return "HA configuration updated successfully.";
+    return "MQTT configuration updated successfully.";
   } catch (error) {
-    console.error("Error updating HA Configuration:", error);
+    console.error("Error updating MQTT Configuration:", error);
     throw error;
   }
 };
 
-export const getLogContent = async () => {
+// Função para enviar os quatro campos ao servidor
+export const setTemperatureConfig = async (
+  bbqTemperature,
+  proteinTemperature,
+  tempCalibration,
+  tempCalibrationP
+) => {
   try {
-    const response = await fetch(`${baseUrl}getLogContent`);
-    if (!response.ok) throw new Error("Failed to fetch log content");
-    return await response.text();
-  } catch (error) {
-    console.error("Error fetching log content:", error);
-    throw error;
-  }
-};
+    // Construindo o corpo da requisição com os quatro parâmetros
+    const body = 
+      `bbqTemperature=${encodeURIComponent(bbqTemperature)}&` +
+      `proteinTemperature=${encodeURIComponent(proteinTemperature)}&` +
+      `tempCalibration=${encodeURIComponent(tempCalibration)}&` +
+      `tempCalibrationP=${encodeURIComponent(tempCalibrationP)}`;
 
-// Funções para enviar dados ao servidor
-export const setTemperature = async (temperature) => {
-  try {
-    const response = await fetch(`${baseUrl}setTemp`, {
-      method: "POST",
+    const response = await fetch(`${baseUrl}/api/v1/temperature/config`, {
+      method: "PATCH",  // Mudando para PATCH
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: `temp=${encodeURIComponent(temperature)}`,
+      body: body,
     });
-    if (!response.ok) throw new Error("Failed to set temperature");
-    return "Temperature set successfully.";
-  } catch (error) {
-    console.error("Error setting BBQ Temperature:", error);
-    throw error;
-  }
-};
 
-export const setProteinTemp = async (proteinTemp) => {
-  try {
-    const response = await fetch(`${baseUrl}setProteinTemp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: `proteinTemp=${encodeURIComponent(proteinTemp)}`,
-    });
-    if (!response.ok) throw new Error("Failed to set Protein Temperature");
-    return "Protein Temperature set successfully.";
-  } catch (error) {
-    console.error("Error setting Protein Temperature:", error);
-    throw error;
-  }
-};
+    // Verificação da resposta
+    if (!response.ok) throw new Error("Failed to set temperature configuration");
 
-export const setTempCalibration = async (calibration) => {
-  try {
-    const response = await fetch(`${baseUrl}setTempCalibration`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: `tempCalibration=${encodeURIComponent(calibration)}`,
-    });
-    if (!response.ok) throw new Error("Failed to set temperature calibration");
-    return "Temperature calibration set successfully.";
+    const result = await response.json();  // Ajuste para ler a resposta JSON
+    return result.message;  // Ajuste para retornar a mensagem da resposta
   } catch (error) {
-    console.error("Error setting temperature calibration:", error);
+    console.error("Error setting temperature configuration:", error);
     throw error;
   }
 };
 
 export const resetSystem = async () => {
   try {
-    const response = await fetch(`${baseUrl}resetSystem`, { method: "POST" });
+    const response = await fetch(`${baseUrl}/api/v1/system/reset`, { method: "POST" });
     if (!response.ok) throw new Error("Failed to reset system");
     return "System reset successfully.";
   } catch (error) {
@@ -190,13 +165,52 @@ export const resetSystem = async () => {
   }
 };
 
+// Função para ativar o processo de cura
 export const activateCure = async () => {
   try {
-    const response = await fetch(`${baseUrl}activateCure`, { method: "POST" });
+    // Enviando a requisição POST para o servidor
+    const response = await fetch(`${baseUrl}/api/v1/system/activateCure`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Verificação da resposta
     if (!response.ok) throw new Error("Failed to activate cure process");
-    return "Cure process activated successfully.";
+
+    const responseData = await response.json();
+
+    // Verifica se a resposta tem a estrutura correta
+    if (responseData && responseData.message) {
+      return responseData.message;
+    } else {
+      throw new Error("Unexpected response structure");
+    }
   } catch (error) {
     console.error("Error activating cure process:", error);
+    throw error;
+  }
+};
+
+
+// Função para buscar o conteúdo do log do servidor
+export const getLogContent = async () => {
+  try {
+    const response = await fetch(`${baseUrl}/api/v1/log/content`);
+    if (!response.ok) throw new Error("Failed to fetch log content");
+
+    // Parse da resposta como JSON
+    const jsonResponse = await response.json();
+
+    // Verifica se a estrutura da resposta contém o campo logContent
+    if (jsonResponse.data && jsonResponse.data.logContent) {
+      return jsonResponse.data.logContent;
+    } else {
+      throw new Error("Log content not found in response");
+    }
+  } catch (error) {
+    console.error("Error fetching log content:", error);
     throw error;
   }
 };
@@ -210,7 +224,7 @@ export const uploadFirmware = async (file) => {
     const formData = new FormData();
     formData.append("update", file); // 'update' é o nome do campo que o servidor espera
 
-    const response = await fetch(`${baseUrl}updateFirmware`, {
+    const response = await fetch(`${baseUrl}/api/v1/system/updateFirmware`, {
       method: "POST",
       body: formData, // FormData será enviado como 'multipart/form-data'
     });
@@ -228,15 +242,32 @@ export const uploadFirmware = async (file) => {
 // Função para obter a configuração de temperatura
 export const getTempConfig = async () => {
   try {
-    const response = await fetch(`${baseUrl}getTempConfig`);
+    const response = await fetch(`${baseUrl}/api/v1/temp/config`);
     if (!response.ok)
       throw new Error("Falha ao buscar configuração de temperatura");
-    return await response.json();
+
+    const result = await response.json();
+
+    // Certificando-se de que estamos acessando o nó 'data'
+    const data = result.data;
+
+    // Retornar os campos específicos
+    return {
+      minBBQTemp: data.minBBQTemp,
+      maxBBQTemp: data.maxBBQTemp,
+      minPrtTemp: data.minPrtTemp,
+      maxPrtTemp: data.maxPrtTemp,
+      minCaliTemp: data.minCaliTemp,
+      maxCaliTemp: data.maxCaliTemp,
+      minCaliTempP: data.minCaliTempP,
+      maxCaliTempP: data.maxCaliTempP,
+    };
   } catch (error) {
     console.error("Erro ao carregar configuração de temperatura:", error);
     throw error;
   }
 };
+
 
 // Função para atualizar a configuração de temperatura
 export const updateTempConfig = async (
@@ -245,10 +276,14 @@ export const updateTempConfig = async (
   minPrtTemp,
   maxPrtTemp,
   minCaliTemp,
-  maxCaliTemp
+  maxCaliTemp,
+  minCaliTempP,
+  maxCaliTempP
 ) => {
   try {
     // Validar os parâmetros de entrada
+    const isValidTemperature = (temp) => typeof temp === "number" && !isNaN(temp);
+
     if (!isValidTemperature(minBBQTemp)) {
       throw new Error("Valor inválido ou ausente para 'minBBQTemp'");
     }
@@ -267,6 +302,12 @@ export const updateTempConfig = async (
     if (!isValidTemperature(maxCaliTemp)) {
       throw new Error("Valor inválido ou ausente para 'maxCaliTemp'");
     }
+    if (!isValidTemperature(minCaliTempP)) {
+      throw new Error("Valor inválido ou ausente para 'minCaliTempP'");
+    }
+    if (!isValidTemperature(maxCaliTempP)) {
+      throw new Error("Valor inválido ou ausente para 'maxCaliTempP'");
+    }
 
     // Construir manualmente os dados do corpo da requisição POST como uma string
     const body =
@@ -275,11 +316,14 @@ export const updateTempConfig = async (
       `minPrtTemp=${encodeURIComponent(minPrtTemp)}&` +
       `maxPrtTemp=${encodeURIComponent(maxPrtTemp)}&` +
       `minCaliTemp=${encodeURIComponent(minCaliTemp)}&` +
-      `maxCaliTemp=${encodeURIComponent(maxCaliTemp)}`;
+      `maxCaliTemp=${encodeURIComponent(maxCaliTemp)}&` +
+      `minCaliTempP=${encodeURIComponent(minCaliTempP)}&` +
+      `maxCaliTempP=${encodeURIComponent(maxCaliTempP)}`;
+      
 
-    // Enviar a requisição POST para o servidor
-    const response = await fetch(`${baseUrl}updateTempConfig`, {
-      method: "POST",
+    // Enviar a requisição PATCH para o servidor
+    const response = await fetch(`${baseUrl}/api/v1/temp/config`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
@@ -297,46 +341,34 @@ export const updateTempConfig = async (
   }
 };
 
-// Função auxiliar para validar a temperatura
-const isValidTemperature = (temperature) => {
-  return typeof temperature === "number" && !isNaN(temperature);
-};
-
-
 // Função para obter a configuração de AI
-// export const getAiConfig = async () => {
-//   try {
-//     const response = await fetch(`${baseUrl}getAiConfig`);
-//     if (!response.ok)
-//       throw new Error("Falha ao buscar configuração de AI");
-//     return await response.json();
-//   } catch (error) {
-//     console.error("Erro ao carregar configuração de AI:", error);
-//     throw error;
-//   }
-// };
-
-// MOCK AI Config
 export const getAiConfig = async () => {
   try {
+    const response = await fetch(`${baseUrl}/api/v1/ai/config`);
     
-    // Valores simulados
-    const aiKey = "AIzaSyDf9K8Ya3djc2PO0YMmJmADRhuYFHMrgbc";
-    const tip = "Me de 1 dica e 1 receita de Churrasco americano no total de 200 palavras. Estruture o texto com Cabecalho, Dica, Cabecalho com o nome da receita, Receita.";
+    if (!response.ok)
+      throw new Error("Falha ao buscar configuração de AI");
 
-    return { aiKey, tip };
+    const responseData = await response.json();
+
+    // Extraindo os dados do campo 'data'
+    const data = responseData.data;
+
+    // Retornar os campos específicos
+    return {
+      aiKey: data.aiKey,
+      tip: data.tip,
+    };
   } catch (error) {
     console.error("Erro ao carregar configuração de AI:", error);
     throw error;
   }
 };
 
-
-
-// Function to update AI configuration
+// Função para atualizar a configuração de AI
 export const updateAIConfig = async (aiKey, tip) => {
   try {
-    // Validate input parameters
+    // Validar os parâmetros de entrada
     if (!aiKey || typeof aiKey !== 'string') {
       throw new Error("Invalid or missing 'aiKey'");
     }
@@ -344,24 +376,25 @@ export const updateAIConfig = async (aiKey, tip) => {
       throw new Error("Invalid or missing 'tip'");
     }
 
-    // Manually construct the POST body data as a string
+    // Construir manualmente os dados do corpo da requisição POST como uma string
     const body = `aiKey=${encodeURIComponent(aiKey)}&tip=${encodeURIComponent(tip)}`;
 
-    // Sending the POST request to the server
-    const response = await fetch(`${baseUrl}/updateAiConfig`, {
-      method: 'POST',
+    // Enviar a requisição PATCH para o servidor
+    const response = await fetch(`${baseUrl}/api/v1/ai/config`, {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: body,
     });
 
-    // Check the response
-    if (!response.ok) throw new Error("Failed to update AI configuration");
+    // Verificar a resposta
+    if (!response.ok) throw new Error("Falha ao atualizar a configuração de AI");
 
-    return "AI configuration updated successfully.";
+    return "Configuração de AI atualizada com sucesso.";
   } catch (error) {
-    console.error("Error updating AI Configuration:", error);
+    console.error("Erro ao atualizar a configuração de AI:", error);
     throw error;
   }
 };
+

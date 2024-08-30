@@ -9,8 +9,7 @@ import {
 import {
   getTempConfig,
   updateTempConfig,
-  setTempCalibration,
-  getTemperatureData,
+  setTemperatureConfig,
 } from "../../Api";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
 
@@ -22,35 +21,24 @@ function TempConfig() {
     maxPrtTemp: "",
     minCaliTemp: "",
     maxCaliTemp: "",
+    minCaliTempP: "",
+    maxCaliTempP: "",
   });
-  const [calibrationValue, setCalibrationValue] = useState(""); // State for calibration value
+  const [calibrationBBQ, setCalibrationBBQ] = useState(""); // State for BBQ calibration value
+  const [calibrationProtein, setCalibrationProtein] = useState(""); // State for Protein calibration value
 
   useEffect(() => {
     const fetchTempConfig = async () => {
       try {
         const config = await getTempConfig();
+        console.log("Fetched Config from API:", config);
         setTempConfig(config);
       } catch (error) {
         console.error("Error fetching temperature config:", error);
       }
     };
 
-    // Fetch calibration limits from the server
-    const fetchCalibrationLimits = async () => {
-      try {
-        const data = await getTemperatureData();
-        setTempConfig((prev) => ({
-          ...prev,
-          minCaliTemp: data.minCaliTemp,
-          maxCaliTemp: data.maxCaliTemp,
-        }));
-      } catch (error) {
-        console.error("Error fetching calibration limits:", error);
-      }
-    };
-
     fetchTempConfig();
-    fetchCalibrationLimits();
   }, []);
 
   const handleUpdateConfig = async () => {
@@ -62,6 +50,8 @@ function TempConfig() {
         maxPrtTemp,
         minCaliTemp,
         maxCaliTemp,
+        minCaliTempP,
+        maxCaliTempP,
       } = tempConfig;
 
       if (
@@ -70,7 +60,9 @@ function TempConfig() {
         !isValidTemperature(minPrtTemp) ||
         !isValidTemperature(maxPrtTemp) ||
         !isValidTemperature(minCaliTemp) ||
-        !isValidTemperature(maxCaliTemp)
+        !isValidTemperature(maxCaliTemp) ||
+        !isValidTemperature(minCaliTempP) ||
+        !isValidTemperature(maxCaliTempP)
       ) {
         throw new Error("One or more temperature fields are invalid");
       }
@@ -81,7 +73,9 @@ function TempConfig() {
         parseInt(minPrtTemp),
         parseInt(maxPrtTemp),
         parseInt(minCaliTemp),
-        parseInt(maxCaliTemp)
+        parseInt(maxCaliTemp),
+        parseInt(minCaliTempP),
+        parseInt(maxCaliTempP)
       );
 
       alert("Temperature config updated successfully");
@@ -91,19 +85,25 @@ function TempConfig() {
   };
 
   const handleSetCalibration = async () => {
-    // Validate calibration value is within the fetched limits
+    // Validate calibration values are within the fetched limits
     if (
-      calibrationValue < tempConfig.minCaliTemp ||
-      calibrationValue > tempConfig.maxCaliTemp
+      calibrationBBQ < tempConfig.minCaliTemp ||
+      calibrationBBQ > tempConfig.maxCaliTemp ||
+      calibrationProtein < tempConfig.minCaliTempP ||
+      calibrationProtein > tempConfig.maxCaliTempP
     ) {
       alert(
-        `Calibration value must be between ${tempConfig.minCaliTemp} and ${tempConfig.maxCaliTemp}.`
+        `Calibration values must be within their respective ranges.`
       );
       return;
     }
 
     try {
-      const message = await setTempCalibration(calibrationValue);
+      // Use setTemperatureConfig to set both calibration values
+      const message = await setTemperatureConfig(
+        calibrationBBQ, // BBQ calibration value
+        calibrationProtein // Protein calibration value
+      );
       alert(`Calibration set successfully: ${message}`);
     } catch (error) {
       alert(`Error setting calibration: ${error.message}`);
@@ -172,7 +172,7 @@ function TempConfig() {
         />
         <TextField
           name="minCaliTemp"
-          label="Min Calibration Temp"
+          label="Min Calibration BBQ Temp"
           value={tempConfig.minCaliTemp}
           onChange={handleInputChange}
           fullWidth
@@ -181,8 +181,26 @@ function TempConfig() {
         />
         <TextField
           name="maxCaliTemp"
-          label="Max Calibration Temp"
+          label="Max Calibration BBQ Temp"
           value={tempConfig.maxCaliTemp}
+          onChange={handleInputChange}
+          fullWidth
+          margin="normal"
+          type="number"
+        />
+        <TextField
+          name="minCaliTempP"
+          label="Min Calibration Protein Temp"
+          value={tempConfig.minCaliTempP}
+          onChange={handleInputChange}
+          fullWidth
+          margin="normal"
+          type="number"
+        />
+        <TextField
+          name="maxCaliTempP"
+          label="Max Calibration Protein Temp"
+          value={tempConfig.maxCaliTempP}
           onChange={handleInputChange}
           fullWidth
           margin="normal"
@@ -198,13 +216,26 @@ function TempConfig() {
         </Button>
 
         <TextField
-          label="Calibration Value"
-          value={calibrationValue}
-          onChange={(e) => setCalibrationValue(e.target.value)}
+          label="Calibration Value BBQ"
+          value={calibrationBBQ}
+          onChange={(e) => setCalibrationBBQ(e.target.value)}
           inputProps={{
             type: "number",
             min: tempConfig.minCaliTemp,
             max: tempConfig.maxCaliTemp,
+          }}
+          fullWidth
+          margin="normal"
+          type="number"
+        />
+        <TextField
+          label="Calibration Value Protein"
+          value={calibrationProtein}
+          onChange={(e) => setCalibrationProtein(e.target.value)}
+          inputProps={{
+            type: "number",
+            min: tempConfig.minCaliTempP,
+            max: tempConfig.maxCaliTempP,
           }}
           fullWidth
           margin="normal"
