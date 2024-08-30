@@ -1,5 +1,5 @@
-const baseUrl = "http://bbq.local";
-//const baseUrl = "/";
+const baseUrl = "http://bbq.local:8080";
+//const baseUrl = "/:8080";
 
 // Função para buscar dados do servidor do endpoint /monitor
 export const getTemperatureData = async () => {
@@ -48,12 +48,14 @@ export const getMQTTConfig = async () => {
   try {
     const response = await fetch(`${baseUrl}/api/v1/mqtt/config`);
     if (!response.ok) throw new Error("Failed to fetch MQTT config");
+    
     const responseData = await response.json();
-     // Extraindo os dados do campo 'data'
-     const data = responseData.data;
+    // Extraindo os dados do campo 'data'
+    const data = responseData.data;
+
     return {
       mqttServer: data.mqttServer,
-      mqttPort: data.mqttPort,
+      mqttPort: parseInt(data.mqttPort, 10), // Garantindo que mqttPort seja um número inteiro
       mqttUser: data.mqttUser,
       mqttPassword: data.mqttPassword,
       isHAAvailable: data.isHAAvailable,
@@ -63,6 +65,7 @@ export const getMQTTConfig = async () => {
     throw error;
   }
 };
+
 
 // Função para atualizar a configuração MQTT
 export const updateMQTTConfig = async (
