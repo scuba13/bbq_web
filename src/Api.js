@@ -1,5 +1,5 @@
-const baseUrl = "http://bbq.local:8080";
-//const baseUrl = "/:8080";
+const baseUrl = "http://bbq.local";
+//const baseUrl = "/";
 
 // Função para buscar dados do servidor do endpoint /monitor
 export const getTemperatureData = async () => {
