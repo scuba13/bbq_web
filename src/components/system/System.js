@@ -1,24 +1,16 @@
 import React from 'react';
 import { Box, Button, Card, CardContent, Typography } from '@mui/material';
-import { resetSystem, activateCure } from '../../Api';
+import { resetSystem } from '../../Api';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 function System() {
   const handleResetSystem = async () => {
+    if (!window.confirm("Confirma o reset do sistema?")) return;
     try {
       const message = await resetSystem();
       alert(message);
     } catch (error) {
-      alert(`Error: ${error.message}`);
-    }
-  };
-
-  const handleActivateCure = async () => {
-    try {
-      const message = await activateCure();
-      alert(message);
-    } catch (error) {
-      alert(`Error: ${error.message}`);
+      alert(`Erro: ${error.message}`);
     }
   };
 
@@ -29,13 +21,8 @@ function System() {
           <SettingsIcon style={{ fontSize: 30, marginRight: 5 }} /> System
         </Typography>
         <Box mt={2}>
-          <Button variant="contained" color="primary" onClick={handleResetSystem} fullWidth>
+          <Button variant="contained" color="error" onClick={handleResetSystem} fullWidth>
             Reset System
-          </Button>
-        </Box>
-        <Box mt={2}>
-          <Button variant="contained" color="primary" onClick={handleActivateCure} fullWidth>
-            Activate Cure Process
           </Button>
         </Box>
       </CardContent>
