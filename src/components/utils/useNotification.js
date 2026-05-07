@@ -1,14 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Snackbar, Alert } from '@mui/material';
 
 export function useNotification() {
   const [state, setState] = useState({ open: false, message: '', severity: 'success' });
 
-  const notify = useCallback((message, severity = 'success') => {
+  // useRef garante referência estável — não precisa entrar no array de deps do useEffect
+  const notify = useRef((message, severity = 'success') => {
     setState({ open: true, message, severity });
-  }, []);
+  }).current;
 
-  const handleClose = () => setState(s => ({ ...s, open: false }));
+  const handleClose = useCallback(() => setState(s => ({ ...s, open: false })), []);
 
   function NotificationSnackbar() {
     return (

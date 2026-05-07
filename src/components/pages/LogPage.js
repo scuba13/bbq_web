@@ -1,6 +1,6 @@
 import React from 'react';
 import PageLayout from '../layout/PageLayout';
-import Log from '../Log/Log';
+import Log from '../log/Log';
 
 function LogPage() {
   return (

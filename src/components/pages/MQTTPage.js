@@ -1,6 +1,6 @@
 import React from 'react';
 import PageLayout from '../layout/PageLayout';
-import MQTTConfig from '../MQTT/MQTT';
+import MQTTConfig from '../mqtt/MQTT';
 
 function MQTTPage() {
   return (
