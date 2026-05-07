@@ -25,8 +25,7 @@ function AIGeneratedContent() {
 
   const genAI = useMemo(() => aiKey ? new GoogleGenerativeAI(aiKey) : null, [aiKey]);
 
-  // W-05: gemini-pro descontinuado → gemini-1.5-flash
-  const model = useMemo(() => genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null, [genAI]);
+  const model = useMemo(() => genAI ? genAI.getGenerativeModel({ model: "gemini-2.5-flash" }) : null, [genAI]);
 
   const fetchContent = useCallback(async (promptText, setFn) => {
     if (!model) return;

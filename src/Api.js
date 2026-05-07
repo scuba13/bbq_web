@@ -1,6 +1,7 @@
-// Em produção (servido pelo ESP32) pode ser "" (relativo).
-// Para desenvolvimento local com npm start, use "http://bbq.local".
-const baseUrl = "http://bbq.local";
+// Dispositivo real:  "http://bbq.local"
+// Mock local:        "http://localhost:8080"
+// Servido pelo ESP32 (produção): ""
+const baseUrl = "http://localhost:8080";
 
 // ---------------------------------------------------------------------------
 // Monitor
