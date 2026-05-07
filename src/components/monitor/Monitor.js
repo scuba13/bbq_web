@@ -1,94 +1,77 @@
-import React, { useState, useEffect } from "react";
-import { getTemperatureData, setBBQTemperature, setProteinTemperature } from "../../Api";
+import React, { useState } from "react";
+import { setBBQTemperature, setProteinTemperature } from "../../Api";
+import { useMonitor } from "../../context/MonitorContext";
 import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  TextField,
-  Typography,
+  Alert, Box, Button, Card, CardContent,
+  Grid, TextField, Typography,
 } from "@mui/material";
-
 import FireIcon from "@mui/icons-material/Whatshot";
 import FireOffIcon from "@mui/icons-material/WhatshotOutlined";
 import Chunk from "@mui/icons-material/Savings";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import TempChart from "./TempChart";
+import { useNotification } from "../utils/useNotification";
 
 const EMPTY = "--";
 
 function Monitor() {
-  const [temps, setTemps] = useState({
-    bbqCurrentTemp:    EMPTY,
-    bbqSetpoint:       EMPTY,
-    proteinCurrentTemp: EMPTY,
-    proteinSetpoint:   EMPTY,
-    proteinReached:    false,
-    relayState:        EMPTY,
-    avgTemp:           EMPTY,
-    minBBQTemp:        EMPTY,
-    maxBBQTemp:        EMPTY,
-    minPrtTemp:        EMPTY,
-    maxPrtTemp:        EMPTY,
-  });
+  const ctx   = useMonitor();
+  const temps = ctx?.temps ?? {};
+
+  const fmt = (v) => (v != null && v !== EMPTY) ? Math.round(v) : EMPTY;
+
+  const bbqCurrentTemp    = fmt(temps.bbqCurrentTemp);
+  const bbqSetpoint       = fmt(temps.bbqSetpoint);
+  const proteinCurrentTemp = fmt(temps.proteinCurrentTemp);
+  const proteinSetpoint   = fmt(temps.proteinSetpoint);
+  const proteinReached    = temps.proteinReached    ?? false;
+  const relayState        = temps.relayState        ?? EMPTY;
+  const avgTemp           = fmt(temps.avgTemp);
+  const minBBQTemp        = temps.minBBQTemp        ?? EMPTY;
+  const maxBBQTemp        = temps.maxBBQTemp        ?? EMPTY;
+  const minPrtTemp        = temps.minPrtTemp        ?? EMPTY;
+  const maxPrtTemp        = temps.maxPrtTemp        ?? EMPTY;
 
   const [bbqInput, setBbqInput]         = useState("");
   const [proteinInput, setProteinInput] = useState("");
-
-  useEffect(() => {
-    const fetchTemps = async () => {
-      try {
-        const data = await getTemperatureData();
-        setTemps({
-          bbqCurrentTemp:    data.bbqCurrentTemp  > 0 ? data.bbqCurrentTemp  : EMPTY,
-          bbqSetpoint:       data.bbqSetpoint      > 0 ? data.bbqSetpoint      : EMPTY,
-          proteinCurrentTemp: data.proteinCurrentTemp > 0 ? data.proteinCurrentTemp : EMPTY,
-          proteinSetpoint:   data.proteinSetpoint  > 0 ? data.proteinSetpoint  : EMPTY,
-          proteinReached:    data.proteinReached,
-          relayState:        data.relayState === "ON" ? "ON" : "OFF",
-          avgTemp:           data.avgTemp > 0 ? data.avgTemp : EMPTY,
-          minBBQTemp:        data.minBBQTemp,
-          maxBBQTemp:        data.maxBBQTemp,
-          minPrtTemp:        data.minPrtTemp,
-          maxPrtTemp:        data.maxPrtTemp,
-        });
-      } catch (err) {
-        console.error("Erro ao buscar temperaturas:", err);
-      }
-    };
-
-    fetchTemps();
-    const id = setInterval(fetchTemps, 1000);
-    return () => clearInterval(id);
-  }, []);
+  const { notify, NotificationSnackbar } = useNotification();
 
   const handleSetBBQ = async () => {
     const value = parseFloat(bbqInput);
-    if (isNaN(value) || value < temps.minBBQTemp || value > temps.maxBBQTemp) {
-      alert(`Temperatura BBQ deve estar entre ${temps.minBBQTemp}°C e ${temps.maxBBQTemp}°C`);
+    if (isNaN(value) || value < minBBQTemp || value > maxBBQTemp) {
+      notify(`Temperatura BBQ deve estar entre ${minBBQTemp}°C e ${maxBBQTemp}°C`, 'warning');
       return;
     }
     try {
       await setBBQTemperature(value);
       setBbqInput("");
+      notify(`BBQ setpoint → ${value}°C`);
     } catch (err) {
-      alert(`Erro: ${err.message}`);
+      notify(err.message, 'error');
     }
   };
 
   const handleSetProtein = async () => {
     const value = parseFloat(proteinInput);
-    if (isNaN(value) || value < temps.minPrtTemp || value > temps.maxPrtTemp) {
-      alert(`Temperatura proteína deve estar entre ${temps.minPrtTemp}°C e ${temps.maxPrtTemp}°C`);
+    if (isNaN(value) || value < minPrtTemp || value > maxPrtTemp) {
+      notify(`Temperatura proteína deve estar entre ${minPrtTemp}°C e ${maxPrtTemp}°C`, 'warning');
       return;
     }
     try {
       await setProteinTemperature(value);
       setProteinInput("");
+      notify(`Protein setpoint → ${value}°C`);
     } catch (err) {
-      alert(`Erro: ${err.message}`);
+      notify(err.message, 'error');
     }
+  };
+
+  const getChunkStatus = () => {
+    if (proteinReached)                             return "Ready! 🎉";
+    if (proteinSetpoint === EMPTY)                  return "---";
+    if (proteinCurrentTemp > proteinSetpoint)       return "Charcoal Special";
+    if (proteinCurrentTemp < proteinSetpoint)       return "Still Mooing";
+    return "Happy As a Pig In Mud";
   };
 
   const tempColor = (current, target) => {
@@ -98,37 +81,13 @@ function Monitor() {
     return "green";
   };
 
-  const getChunkStatus = () => {
-    if (temps.proteinReached) return "Ready! 🎉";
-    if (temps.proteinSetpoint === EMPTY) return "---";
-    if (temps.proteinCurrentTemp > temps.proteinSetpoint) return "Charcoal Special";
-    if (temps.proteinCurrentTemp < temps.proteinSetpoint) return "Still Mooing";
-    return "Happy As a Pig In Mud";
-  };
-
-  const bigTemp = {
-    fontSize: "4rem",
-    fontWeight: "bold",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100px",
-  };
-
-  const header = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  };
+  const bigTemp = { fontSize: "4rem", fontWeight: "bold", display: "flex", justifyContent: "center", alignItems: "center", height: "100px" };
+  const header  = { display: "flex", justifyContent: "space-between", alignItems: "center" };
 
   return (
     <Box>
-      {temps.proteinReached && (
-        <Alert
-          icon={<CheckCircleIcon />}
-          severity="success"
-          sx={{ mb: 2 }}
-        >
+      {proteinReached && (
+        <Alert icon={<CheckCircleIcon />} severity="success" sx={{ mb: 2 }}>
           Proteína atingiu a temperatura alvo!
         </Alert>
       )}
@@ -139,31 +98,23 @@ function Monitor() {
           <Card variant="outlined">
             <CardContent>
               <Box style={header}>
-                <Typography variant="subtitle1" gutterBottom style={{ display: "flex", alignItems: "center" }}>
-                  {temps.relayState === "ON"
+                <Typography variant="subtitle1" gutterBottom sx={{ display: "flex", alignItems: "center" }}>
+                  {relayState === "ON"
                     ? <FireIcon color="error" style={{ fontSize: 30, marginRight: 5 }} />
                     : <FireOffIcon style={{ fontSize: 30, marginRight: 5 }} />}
                   BBQ
                 </Typography>
-                <Typography style={{ fontSize: "1rem" }}>
-                  Média: {temps.avgTemp} C
-                </Typography>
+                <Typography style={{ fontSize: "1rem" }}>Média: {avgTemp} C</Typography>
               </Box>
-              <Typography
-                component="h2"
-                style={{ ...bigTemp, color: tempColor(temps.bbqCurrentTemp, temps.bbqSetpoint) }}
-              >
-                {temps.bbqCurrentTemp} C
+              <Typography component="h2" style={{ ...bigTemp, color: tempColor(bbqCurrentTemp, bbqSetpoint) }}>
+                {bbqCurrentTemp} C
               </Typography>
-              <Typography color="textSecondary">{temps.bbqSetpoint} C</Typography>
+              <Typography color="textSecondary">{bbqSetpoint} C</Typography>
               <TextField
-                type="number"
-                label="Novo setpoint BBQ"
-                value={bbqInput}
-                onChange={(e) => setBbqInput(e.target.value)}
-                inputProps={{ min: temps.minBBQTemp, max: temps.maxBBQTemp }}
-                margin="normal"
-                fullWidth
+                type="number" label="Novo setpoint BBQ" value={bbqInput}
+                onChange={e => setBbqInput(e.target.value)}
+                inputProps={{ min: minBBQTemp, max: maxBBQTemp }}
+                margin="normal" fullWidth
               />
               <Button variant="contained" onClick={handleSetBBQ} fullWidth>
                 Definir Temp BBQ
@@ -177,29 +128,21 @@ function Monitor() {
           <Card variant="outlined">
             <CardContent>
               <Box style={header}>
-                <Typography variant="subtitle1" gutterBottom style={{ display: "flex", alignItems: "center" }}>
+                <Typography variant="subtitle1" gutterBottom sx={{ display: "flex", alignItems: "center" }}>
                   <Chunk color="inherit" style={{ fontSize: 30, marginRight: 5 }} />
                   Chunk
                 </Typography>
-                <Typography style={{ fontSize: "1rem" }}>
-                  {getChunkStatus()}
-                </Typography>
+                <Typography style={{ fontSize: "1rem" }}>{getChunkStatus()}</Typography>
               </Box>
-              <Typography
-                component="h2"
-                style={{ ...bigTemp, color: tempColor(temps.proteinCurrentTemp, temps.proteinSetpoint) }}
-              >
-                {temps.proteinCurrentTemp} C
+              <Typography component="h2" style={{ ...bigTemp, color: tempColor(proteinCurrentTemp, proteinSetpoint) }}>
+                {proteinCurrentTemp} C
               </Typography>
-              <Typography color="textSecondary">{temps.proteinSetpoint} C</Typography>
+              <Typography color="textSecondary">{proteinSetpoint} C</Typography>
               <TextField
-                type="number"
-                label="New protein setpoint"
-                value={proteinInput}
-                onChange={(e) => setProteinInput(e.target.value)}
-                inputProps={{ min: temps.minPrtTemp, max: temps.maxPrtTemp }}
-                margin="normal"
-                fullWidth
+                type="number" label="New protein setpoint" value={proteinInput}
+                onChange={e => setProteinInput(e.target.value)}
+                inputProps={{ min: minPrtTemp, max: maxPrtTemp }}
+                margin="normal" fullWidth
               />
               <Button variant="contained" onClick={handleSetProtein} fullWidth>
                 Set Protein Temp
@@ -208,6 +151,13 @@ function Monitor() {
           </Card>
         </Grid>
       </Grid>
+
+      <TempChart
+        bbqSetpoint={bbqSetpoint !== EMPTY ? Number(bbqSetpoint) : 0}
+        proteinSetpoint={proteinSetpoint !== EMPTY ? Number(proteinSetpoint) : 0}
+      />
+
+      <NotificationSnackbar />
     </Box>
   );
 }

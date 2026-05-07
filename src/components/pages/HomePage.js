@@ -20,6 +20,7 @@ function HomePage() {
         </Grid>
         <Grid item xs={6}>
           <Button variant="contained" component={Link} to="/system" fullWidth>Sistema</Button>
+        <Button variant="contained" component={Link} to="/diagnostics" fullWidth>Diagnósticos</Button>
         </Grid>
       </Grid>
 

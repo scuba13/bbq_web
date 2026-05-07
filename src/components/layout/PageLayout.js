@@ -6,7 +6,7 @@ import Watermark from '../utils/Watermark';
 
 function PageLayout({ title, subtitle, children }) {
   return (
-    <Container sx={{ padding: '20px', position: 'relative' }}>
+    <Container sx={{ padding: '20px', position: 'relative', pt: '20px' }}>
       <Watermark />
       <PageTitle title={title} subtitle={subtitle} />
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>

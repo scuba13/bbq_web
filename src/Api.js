@@ -222,6 +222,56 @@ export const resetSystem = async () => {
   return "Sistema resetado com sucesso.";
 };
 
+export const getSystemUpdateStatus = async () => {
+  const response = await fetch(`${baseUrl}/api/v1/system/update/status`);
+  if (!response.ok) throw new Error("Falha ao buscar status do firmware");
+  const { data } = await response.json();
+  return data;
+};
+
+export const performRollback = async () => {
+  const response = await fetch(`${baseUrl}/api/v1/system/rollback`, { method: "POST" });
+  if (!response.ok) throw new Error("Falha ao iniciar rollback");
+  return "Rollback iniciado.";
+};
+
+// ---------------------------------------------------------------------------
+// Auth (Chave de API)
+// ---------------------------------------------------------------------------
+
+export const getAuthConfig = async () => {
+  const response = await fetch(`${baseUrl}/api/v1/auth/config`);
+  if (!response.ok) throw new Error("Falha ao buscar configuração de auth");
+  const { data } = await response.json();
+  return data;
+};
+
+export const updateAuthConfig = async (currentKey, newKey) => {
+  let body = `newKey=${encodeURIComponent(newKey)}`;
+  if (currentKey) body += `&currentKey=${encodeURIComponent(currentKey)}`;
+  const response = await fetch(`${baseUrl}/api/v1/auth/config`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || `Erro ${response.status}`);
+  }
+  return "Configuração atualizada.";
+};
+
+// ---------------------------------------------------------------------------
+// Diagnósticos
+// ---------------------------------------------------------------------------
+
+export const getDiagnostics = async () => {
+  const response = await fetch(`${baseUrl}/api/v1/diagnostics`);
+  if (!response.ok) throw new Error("Falha ao buscar diagnósticos");
+  const { data } = await response.json();
+  return data;
+};
+
 export const uploadFirmware = async (file) => {
   const formData = new FormData();
   formData.append("update", file);

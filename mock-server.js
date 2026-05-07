@@ -48,6 +48,8 @@ let aiConfig = {
   tip: "Dê uma dica rápida sobre controle de temperatura em defumação.",
 };
 
+let authConfig = { apiKey: "" };
+
 let debugInject = { active: false, bbqTemp: 0, proteinTemp: 0, endMs: 0 };
 
 // ─── Simula variação de temperatura ──────────────────────────────────────────
@@ -288,9 +290,38 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // ── Auth (mock: sempre sem chave) ────────────────────────────────────────
+  // ── Auth ─────────────────────────────────────────────────────────────────
   if (url === "/api/v1/auth/config" && method === "GET") {
-    ok(res, "Auth config", { keyConfigured: false, keyPreview: "" });
+    const configured = authConfig.apiKey.length > 0;
+    ok(res, "Auth config", {
+      keyConfigured: configured,
+      keyPreview: configured ? authConfig.apiKey.substring(0, 4) + "****" : "",
+    });
+    return;
+  }
+
+  if (url === "/api/v1/auth/config" && method === "PATCH") {
+    const p = await parseBody(req);
+    if (authConfig.apiKey && p.currentKey !== authConfig.apiKey) {
+      err(res, 401, "Chave atual incorreta"); return;
+    }
+    authConfig.apiKey = p.newKey || "";
+    ok(res, authConfig.apiKey ? "Chave definida" : "Autenticação desabilitada");
+    return;
+  }
+
+  // ── System update status ──────────────────────────────────────────────────
+  if (url === "/api/v1/system/update/status" && method === "GET") {
+    ok(res, "Status da atualização", {
+      inProgress: false, progress: 0,
+      currentVersion: "1.0.0", newVersion: "",
+    });
+    return;
+  }
+
+  // ── Rollback ──────────────────────────────────────────────────────────────
+  if (url === "/api/v1/system/rollback" && method === "POST") {
+    ok(res, "Rollback iniciado");
     return;
   }
 
