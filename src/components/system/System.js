@@ -18,11 +18,11 @@ function System() {
     <Card variant="outlined">
       <CardContent>
         <Typography variant="subtitle1" gutterBottom style={{ display: "flex", alignItems: "center" }}>
-          <SettingsIcon style={{ fontSize: 30, marginRight: 5 }} /> System
+          <SettingsIcon style={{ fontSize: 30, marginRight: 5 }} /> Sistema
         </Typography>
         <Box mt={2}>
           <Button variant="contained" color="error" onClick={handleResetSystem} fullWidth>
-            Reset System
+            Resetar Sistema
           </Button>
         </Box>
       </CardContent>

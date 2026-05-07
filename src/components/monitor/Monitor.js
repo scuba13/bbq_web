@@ -99,7 +99,7 @@ function Monitor() {
   };
 
   const getChunkStatus = () => {
-    if (temps.proteinReached) return "Pronta! 🎉";
+    if (temps.proteinReached) return "Ready! 🎉";
     if (temps.proteinSetpoint === EMPTY) return "---";
     if (temps.proteinCurrentTemp > temps.proteinSetpoint) return "Charcoal Special";
     if (temps.proteinCurrentTemp < temps.proteinSetpoint) return "Still Mooing";
@@ -146,7 +146,7 @@ function Monitor() {
                   BBQ
                 </Typography>
                 <Typography style={{ fontSize: "1rem" }}>
-                  Avg: {temps.avgTemp} C
+                  Média: {temps.avgTemp} C
                 </Typography>
               </Box>
               <Typography
@@ -166,7 +166,7 @@ function Monitor() {
                 fullWidth
               />
               <Button variant="contained" onClick={handleSetBBQ} fullWidth>
-                Set BBQ Temp
+                Definir Temp BBQ
               </Button>
             </CardContent>
           </Card>
@@ -194,7 +194,7 @@ function Monitor() {
               <Typography color="textSecondary">{temps.proteinSetpoint} C</Typography>
               <TextField
                 type="number"
-                label="Novo setpoint proteína"
+                label="New protein setpoint"
                 value={proteinInput}
                 onChange={(e) => setProteinInput(e.target.value)}
                 inputProps={{ min: temps.minPrtTemp, max: temps.maxPrtTemp }}

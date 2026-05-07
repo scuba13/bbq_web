@@ -9,7 +9,7 @@ import FirmwareUpload from '../system/FirmwareUpload';
 
 function SystemPage() {
   return (
-    <PageLayout title="LazyQ Inc." subtitle="System">
+    <PageLayout title="LazyQ Inc." subtitle="Sistema">
       <Box mb={3}><System /></Box>
       <Box mb={3}><TempLimits /></Box>
       <Box mb={3}><TempCalibration /></Box>

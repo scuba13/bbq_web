@@ -57,7 +57,7 @@ function TempCalibration() {
         ) : (
           <>
             <TextField
-              label={`Offset BBQ (${limits?.minCaliTemp} a ${limits?.maxCaliTemp}°C)`}
+              label={`Calibração BBQ (${limits?.minCaliTemp} a ${limits?.maxCaliTemp}°C)`}
               type="number"
               value={caliBBQ}
               onChange={e => setCaliBBQ(e.target.value)}
@@ -66,7 +66,7 @@ function TempCalibration() {
               margin="normal"
             />
             <TextField
-              label={`Offset Proteína (${limits?.minCaliTempP} a ${limits?.maxCaliTempP}°C)`}
+              label={`Calibração Proteína (${limits?.minCaliTempP} a ${limits?.maxCaliTempP}°C)`}
               type="number"
               value={caliPrt}
               onChange={e => setCaliPrt(e.target.value)}

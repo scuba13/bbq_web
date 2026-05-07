@@ -4,7 +4,7 @@ import MQTTConfig from '../mqtt/MQTT';
 
 function MQTTPage() {
   return (
-    <PageLayout title="LazyQ Inc." subtitle="MQTT Device">
+    <PageLayout title="LazyQ Inc." subtitle="Dispositivo MQTT">
       <MQTTConfig />
     </PageLayout>
   );

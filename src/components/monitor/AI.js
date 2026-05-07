@@ -91,7 +91,7 @@ function AIGeneratedContent() {
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
             <HelpOutlineIcon sx={{ mr: 1 }} />
-            Ask Me - Powered by Google AI
+            Pergunte-me - Powered by Google AI
           </Typography>
           <form onSubmit={handleAsk}>
             <TextField
@@ -116,7 +116,7 @@ function AIGeneratedContent() {
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <AutoStoriesIcon sx={{ mr: 1 }} />
-            BBQ AI Tips - Powered by Google AI
+            Dicas BBQ - Powered by Google AI
             <Button onClick={handleToggleTips} sx={{ ml: 'auto' }}>
               {isOpen ? 'Ocultar' : 'Mostrar'}
             </Button>

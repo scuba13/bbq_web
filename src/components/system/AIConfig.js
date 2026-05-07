@@ -35,12 +35,12 @@ function AIConfig() {
       <CardContent>
         <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
           <SettingsApplicationsIcon sx={{ fontSize: 30, mr: 1 }} />
-          AI Configuration
+          Configuração AI
         </Typography>
 
         {loading ? <CircularProgress size={24} /> : (
           <>
-            <TextField name="aiKey" label="AI Key (Google)" value={config.aiKey}
+            <TextField name="aiKey" label="Chave AI (Google)" value={config.aiKey}
               onChange={handleChange} fullWidth margin="normal"
               helperText="Deixe vazio para desabilitar AI" />
             <TextField name="tip" label="Prompt padrão" value={config.tip}

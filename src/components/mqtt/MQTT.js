@@ -46,7 +46,7 @@ function MQTTConfig() {
       <CardContent>
         <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
           <LinkIcon sx={{ fontSize: 30, mr: 1 }} />
-          MQTT Device Configuration
+          Configuração MQTT
         </Typography>
 
         {loading ? <CircularProgress size={24} /> : (

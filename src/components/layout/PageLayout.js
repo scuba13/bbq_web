@@ -10,7 +10,7 @@ function PageLayout({ title, subtitle, children }) {
       <Watermark />
       <PageTitle title={title} subtitle={subtitle} />
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <Button variant="contained" component={Link} to="/">Home</Button>
+        <Button variant="contained" component={Link} to="/">Início</Button>
       </div>
       {children}
     </Container>

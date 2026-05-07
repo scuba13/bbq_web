@@ -19,7 +19,7 @@ function HomePage() {
           <Button variant="contained" component={Link} to="/log" fullWidth>Log</Button>
         </Grid>
         <Grid item xs={6}>
-          <Button variant="contained" component={Link} to="/system" fullWidth>System</Button>
+          <Button variant="contained" component={Link} to="/system" fullWidth>Sistema</Button>
         </Grid>
       </Grid>
 

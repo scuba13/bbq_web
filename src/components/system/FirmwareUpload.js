@@ -52,7 +52,7 @@ function FirmwareUpload() {
       <CardContent>
         <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
           <SystemUpdateAltIcon sx={{ fontSize: 30, mr: 1 }} />
-          Firmware Update
+          Atualização de Firmware
         </Typography>
 
         <input

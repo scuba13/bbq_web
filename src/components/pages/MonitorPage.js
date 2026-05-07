@@ -6,7 +6,7 @@ import AIGeneratedContent from '../monitor/AI';
 
 function MonitorPage() {
   return (
-    <PageLayout title="LazyQ Inc." subtitle="Web BBQ Monitor">
+    <PageLayout title="LazyQ Inc." subtitle="Monitor BBQ">
       <Monitor />
       <Box mt={4}>
         <AIGeneratedContent />
