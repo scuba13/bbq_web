@@ -44,7 +44,7 @@ let mqttConfig = {
 };
 
 let aiConfig = {
-  aiKey: "AIzaSyA1mnDc-qRdlWebX_1nkzHteNVbYGd2k94",
+  aiKey: "",  // chave fica em .env.local → REACT_APP_GOOGLE_AI_KEY
   tip: "Dê uma dica rápida sobre controle de temperatura em defumação.",
 };
 

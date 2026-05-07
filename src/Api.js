@@ -190,8 +190,10 @@ export const getAiConfig = async () => {
 
   const { data } = await response.json();
   return {
-    aiKey: data.aiKey ?? "",
-    tip:   data.tip   ?? "",
+    // Em dev: REACT_APP_GOOGLE_AI_KEY em .env.local tem prioridade sobre a API
+    // Em produção (ESP32): variável não existe, usa o que veio do dispositivo
+    aiKey: process.env.REACT_APP_GOOGLE_AI_KEY || data.aiKey || "",
+    tip:   data.tip ?? "",
   };
 };
 
