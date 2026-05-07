@@ -1,85 +1,97 @@
 import React, { useState, useRef } from 'react';
-import { Button, Card, CardContent, Typography, Box } from '@mui/material';
-import { uploadFirmware } from '../../Api'; // Import the API function
-import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt'; // Import SystemUpdateAltIcon
+import { Box, Button, Card, CardContent, LinearProgress, Typography } from '@mui/material';
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
+import { useNotification } from '../utils/useNotification';
+
+const BASE_URL = "http://bbq.local";
 
 function FirmwareUpload() {
   const [file, setFile] = useState(null);
-  const [fileName, setFileName] = useState(""); // State to store the file name
-  const fileInputRef = useRef(null); // Reference to the file input
+  const [progress, setProgress] = useState(null); // null = idle, 0–100 = uploading
+  const fileInputRef = useRef(null);
+  const { notify, NotificationSnackbar } = useNotification();
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    console.log('File selected:', selectedFile);
-    setFile(selectedFile); // Store the selected file
-    setFileName(selectedFile.name); // Set the file name in state
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0] || null);
   };
 
-  const handleChooseFileClick = () => {
-    // Simulate a click on the file input
-    fileInputRef.current.click();
-  };
+  const handleUpload = () => {
+    if (!file) { notify('Selecione um arquivo .bin primeiro', 'warning'); return; }
 
-  const handleUploadClick = async () => {
-    console.log('Upload button clicked');
-    if (!file) {
-      alert('Please select a file first.');
-      return;
-    }
-    try {
-      const result = await uploadFirmware(file);
-      alert(result); // Notify the user of success
-    } catch (error) {
-      alert(`Error: ${error.message}`); // Notify the user of the error
-    }
+    const formData = new FormData();
+    formData.append('update', file);
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
+    });
+
+    xhr.addEventListener('load', () => {
+      setProgress(null);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        notify('Firmware enviado com sucesso! Dispositivo reiniciando...');
+        setFile(null);
+      } else {
+        notify(`Erro no upload: ${xhr.statusText}`, 'error');
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      setProgress(null);
+      notify('Erro de rede durante o upload', 'error');
+    });
+
+    xhr.open('POST', `${BASE_URL}/api/v1/system/update`);
+    xhr.send(formData);
+    setProgress(0);
   };
 
   return (
     <Card variant="outlined">
       <CardContent>
-        <Typography variant="subtitle1" gutterBottom style={{ display: "flex", alignItems: "center" }}>
-          <SystemUpdateAltIcon style={{ fontSize: 30, marginRight: 5 }} />
+        <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+          <SystemUpdateAltIcon sx={{ fontSize: 30, mr: 1 }} />
           Firmware Update
         </Typography>
+
+        <input
+          type="file" ref={fileInputRef}
+          onChange={handleFileChange}
+          accept=".bin"
+          style={{ display: 'none' }}
+        />
+
         <Box mt={2}>
-          {/* Hidden file input */}
-          <input
-            type="file"
-            ref={fileInputRef} // Reference to the file input
-            onChange={handleFileChange}
-            accept=".bin" // Accept only .bin files
-            style={{ display: 'none' }} // Hide the file input
-          />
-          {/* "Choose File" button */}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleChooseFileClick}
-            fullWidth
-          >
-            Choose File
+          <Button variant="contained" onClick={() => fileInputRef.current.click()} fullWidth>
+            Escolher arquivo
           </Button>
         </Box>
-        {/* Display the selected file name */}
-        {fileName && (
-          <Box mt={2}>
-            <Typography variant="body1" gutterBottom>
-              Selected File: {fileName}
-            </Typography>
+
+        {file && (
+          <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+            {file.name} ({(file.size / 1024).toFixed(0)} KB)
+          </Typography>
+        )}
+
+        {progress !== null && (
+          <Box sx={{ mt: 2 }}>
+            <LinearProgress variant="determinate" value={progress} />
+            <Typography variant="body2" align="center" sx={{ mt: 0.5 }}>{progress}%</Typography>
           </Box>
         )}
+
         <Box mt={2}>
-          {/* "Upload Firmware" button */}
           <Button
-            variant="contained"
-            color="primary"
-            onClick={handleUploadClick}
-            fullWidth
+            variant="contained" color="warning"
+            onClick={handleUpload} fullWidth
+            disabled={!file || progress !== null}
           >
-            Upload Firmware
+            {progress !== null ? `Enviando... ${progress}%` : 'Enviar Firmware'}
           </Button>
         </Box>
       </CardContent>
+      <NotificationSnackbar />
     </Card>
   );
 }

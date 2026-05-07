@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Card, CardContent, CircularProgress, Box } from '@mui/material';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Button, Card, CardContent, CircularProgress, Typography } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { getLogContent } from '../../Api';
 
 function LogCard() {
@@ -8,39 +9,43 @@ function LogCard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchLogContent = async () => {
-      try {
-        const content = await getLogContent();
-        setLogContent(content);
-      } catch (error) {
-        setError('Unable to fetch log content.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLogContent();
+  const fetchLog = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const content = await getLogContent();
+      setLogContent(content);
+    } catch {
+      setError('Não foi possível carregar o log.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => { fetchLog(); }, [fetchLog]);
+
   return (
-    <Card variant="outlined" style={{ maxWidth: '800px', margin: '20px auto', backgroundColor: '#333', color: 'white' }}>
+    <Card variant="outlined" sx={{ maxWidth: 800, margin: '20px auto', backgroundColor: '#333', color: 'white' }}>
       <CardContent>
-        <Typography variant="subtitle1" gutterBottom style={{ display: "flex", alignItems: "center" }}>
-          <DescriptionIcon style={{ fontSize: 30, marginRight: 5 }} /> Log Content
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center' }}>
+            <DescriptionIcon sx={{ fontSize: 30, mr: 1 }} /> Log
+          </Typography>
+          <Button startIcon={<RefreshIcon />} onClick={fetchLog} size="small" disabled={loading}>
+            Atualizar
+          </Button>
+        </Box>
+
         {loading && (
           <Box display="flex" justifyContent="center" alignItems="center" height="200px">
             <CircularProgress />
           </Box>
         )}
         {error && (
-          <Typography variant="body1" color="error" align="center">
-            {error}
-          </Typography>
+          <Typography variant="body1" color="error" align="center">{error}</Typography>
         )}
         {!loading && !error && (
-          <Typography variant="body1" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
             {logContent}
           </Typography>
         )}

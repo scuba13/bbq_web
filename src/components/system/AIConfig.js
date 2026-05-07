@@ -1,85 +1,57 @@
-import React, { useState, useEffect } from "react";
-import { Button, Card, CardContent, TextField, Typography } from "@mui/material";
+import React, { useState, useEffect } from 'react';
+import { Button, Card, CardContent, CircularProgress, TextField, Typography } from '@mui/material';
 import SettingsApplicationsIcon from '@mui/icons-material/SettingsApplications';
-import { getAiConfig, updateAIConfig } from "../../Api"; // Ajuste o caminho conforme necessário
+import { getAiConfig, updateAIConfig } from '../../Api';
+import { useNotification } from '../utils/useNotification';
 
 function AIConfig() {
-  const [aiConfig, setAiConfig] = useState({
-    aiKey: "",
-    tip: "",
-  });
+  const [config, setConfig] = useState({ aiKey: '', tip: '' });
+  const [loading, setLoading] = useState(true);
+  const { notify, NotificationSnackbar } = useNotification();
 
-  // Fetch initial AI configuration when the component mounts
   useEffect(() => {
-    async function fetchAIConfig() {
-      try {
-        const config = await getAiConfig();
-        setAiConfig({
-          aiKey: config.aiKey || "", // Use fallback to empty string if undefined
-          tip: config.tip || "",     // Use fallback to empty string if undefined
-        });
-      } catch (error) {
-        alert(`Failed to fetch AI configuration: ${error.message}`);
-      }
-    }
-
-    fetchAIConfig();
+    getAiConfig()
+      .then(setConfig)
+      .catch(() => notify('Erro ao carregar configuração de AI', 'error'))
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setAiConfig((prevConfig) => ({
-      ...prevConfig,
-      [name]: value,
-    }));
+    setConfig(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     try {
-      const { aiKey, tip } = aiConfig;
-      const message = await updateAIConfig(aiKey, tip);
-      alert(`AI configuration updated successfully: ${message}`);
-    } catch (error) {
-      alert(`Error updating AI configuration: ${error.message}`);
+      await updateAIConfig(config.aiKey, config.tip);
+      notify('Configuração de AI atualizada');
+    } catch (err) {
+      notify(err.message, 'error');
     }
   };
 
   return (
     <Card variant="outlined">
       <CardContent>
-        <Typography
-          variant="h6"
-          gutterBottom
-          style={{ display: "flex", alignItems: "center" }}
-        >
-          <SettingsApplicationsIcon style={{ fontSize: 30, marginRight: 5 }} />
+        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+          <SettingsApplicationsIcon sx={{ fontSize: 30, mr: 1 }} />
           AI Configuration
         </Typography>
-        <TextField
-          name="aiKey"
-          label="AI Key"
-          value={aiConfig.aiKey}
-          onChange={handleInputChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="tip"
-          label="Tip"
-          value={aiConfig.tip}
-          onChange={handleInputChange}
-          fullWidth
-          margin="normal"
-        />
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          fullWidth
-          style={{ marginTop: 20 }}
-        >
-          Update AI Config
-        </Button>
+
+        {loading ? <CircularProgress size={24} /> : (
+          <>
+            <TextField name="aiKey" label="AI Key (Google)" value={config.aiKey}
+              onChange={handleChange} fullWidth margin="normal"
+              helperText="Deixe vazio para desabilitar AI" />
+            <TextField name="tip" label="Prompt padrão" value={config.tip}
+              onChange={handleChange} fullWidth margin="normal" multiline rows={3} />
+            <Button variant="contained" onClick={handleSave} fullWidth sx={{ mt: 2 }}>
+              Salvar
+            </Button>
+          </>
+        )}
       </CardContent>
+      <NotificationSnackbar />
     </Card>
   );
 }

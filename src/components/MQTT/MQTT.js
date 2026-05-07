@@ -1,116 +1,79 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
-  Button,
-  Card,
-  CardContent,
-  Checkbox,
-  FormControlLabel,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { getMQTTConfig, updateMQTTConfig } from "../../Api";
-import LinkIcon from "@mui/icons-material/Link";
+  Button, Card, CardContent, Checkbox, CircularProgress,
+  FormControlLabel, TextField, Typography,
+} from '@mui/material';
+import LinkIcon from '@mui/icons-material/Link';
+import { getMQTTConfig, updateMQTTConfig } from '../../Api';
+import { useNotification } from '../utils/useNotification';
 
 function MQTTConfig() {
-  const [mqttConfig, setMqttConfig] = useState({
-    mqttServer: "",
-    mqttPort: "",
-    mqttUser: "",
-    mqttPassword: "",
-    isHAAvailable: false,
+  const [config, setConfig] = useState({
+    mqttServer: '', mqttPort: '', mqttUser: '', mqttPassword: '', isHAAvailable: false,
   });
+  const [loading, setLoading] = useState(true);
+  const { notify, NotificationSnackbar } = useNotification();
 
   useEffect(() => {
-    const fetchHAConfig = async () => {
-      try {
-        const config = await getMQTTConfig();
-        setMqttConfig(config);
-      } catch (error) {
-        console.error("Error fetching HA config:", error);
-      }
-    };
-    fetchHAConfig();
+    getMQTTConfig()
+      .then(setConfig)
+      .catch(() => notify('Erro ao carregar configuração MQTT', 'error'))
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleUpdateConfig = async () => {
-    try {
-      const { mqttServer, mqttPort, mqttUser, mqttPassword, isHAAvailable } = mqttConfig;
-  
-      // Converte mqttPort para número, se não for
-      const port = Number(mqttPort);
-  
-      await updateMQTTConfig(mqttServer, port, mqttUser, mqttPassword, isHAAvailable);
-      alert("Config updated successfully");
-    } catch (error) {
-      alert(`Error updating config: ${error.message}`);
-    }
-  };
-  
-
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const newValue = type === "checkbox" ? checked : value;
-    setMqttConfig((prevConfig) => ({
-      ...prevConfig,
-      [name]: newValue,
-    }));
+    setConfig(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateMQTTConfig(
+        config.mqttServer,
+        Number(config.mqttPort),
+        config.mqttUser,
+        config.mqttPassword,
+        config.isHAAvailable
+      );
+      notify('Configuração MQTT atualizada');
+    } catch (err) {
+      notify(err.message, 'error');
+    }
   };
 
   return (
     <Card variant="outlined">
       <CardContent>
-      <Typography variant="subtitle1" gutterBottom style={{ display: "flex", alignItems: "center" }}>
-        <LinkIcon style={{ fontSize: 30, marginRight: 5 }} />
-        MQTT Device Configuration
-      </Typography>
+        <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+          <LinkIcon sx={{ fontSize: 30, mr: 1 }} />
+          MQTT Device Configuration
+        </Typography>
 
-        <TextField
-          name="mqttServer"
-          label="MQTT Server"
-          value={mqttConfig.mqttServer}
-          onChange={handleInputChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="mqttPort"
-          label="MQTT Port"
-          value={mqttConfig.mqttPort}
-          onChange={handleInputChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="mqttUser"
-          label="MQTT User"
-          value={mqttConfig.mqttUser}
-          onChange={handleInputChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="mqttPassword"
-          label="MQTT Password"
-          type="password"
-          value={mqttConfig.mqttPassword}
-          onChange={handleInputChange}
-          fullWidth
-          margin="normal"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              name="isHAAvailable"
-              checked={mqttConfig.isHAAvailable}
-              onChange={handleInputChange}
+        {loading ? <CircularProgress size={24} /> : (
+          <>
+            <TextField name="mqttServer" label="Servidor MQTT" value={config.mqttServer}
+              onChange={handleChange} fullWidth margin="normal" />
+            <TextField name="mqttPort" label="Porta" type="number" value={config.mqttPort}
+              onChange={handleChange} fullWidth margin="normal" />
+            <TextField name="mqttUser" label="Usuário" value={config.mqttUser}
+              onChange={handleChange} fullWidth margin="normal" />
+            <TextField
+              name="mqttPassword" label="Senha" type="password"
+              value={config.mqttPassword} onChange={handleChange}
+              fullWidth margin="normal"
+              helperText="Deixe vazio para manter a senha atual"
             />
-          }
-          label="Is HA Available"
-        />
-        <Button variant="contained" onClick={handleUpdateConfig} fullWidth>
-          Save Config
-        </Button>
+            <FormControlLabel
+              control={<Checkbox name="isHAAvailable" checked={config.isHAAvailable} onChange={handleChange} />}
+              label="Home Assistant disponível"
+            />
+            <Button variant="contained" onClick={handleSave} fullWidth sx={{ mt: 1 }}>
+              Salvar
+            </Button>
+          </>
+        )}
       </CardContent>
+      <NotificationSnackbar />
     </Card>
   );
 }

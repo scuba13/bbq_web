@@ -1,6 +1,6 @@
-// URL base: vazio = relativo ao host que serviu a página (ESP32 em produção).
-// Para desenvolvimento local, troque por "http://<IP-do-dispositivo>".
-const baseUrl = "";
+// Em produção (servido pelo ESP32) pode ser "" (relativo).
+// Para desenvolvimento local com npm start, use "http://bbq.local".
+const baseUrl = "http://bbq.local";
 
 // ---------------------------------------------------------------------------
 // Monitor
@@ -54,6 +54,24 @@ export const setBBQTemperature = async (temp) => {
 
 export const setProteinTemperature = async (temp) => {
   const body = `proteinTemperature=${encodeURIComponent(temp)}`;
+  const response = await fetch(`${baseUrl}/api/v1/temperature/config`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || `Erro ${response.status}`);
+  }
+  const result = await response.json();
+  return result.message;
+};
+
+// Calibração (offset de ajuste fino) — parâmetros tempCalibration / tempCalibrationP
+export const setCalibration = async (caliBBQ, caliProtein) => {
+  const body =
+    `tempCalibration=${encodeURIComponent(caliBBQ)}&` +
+    `tempCalibrationP=${encodeURIComponent(caliProtein)}`;
   const response = await fetch(`${baseUrl}/api/v1/temperature/config`, {
     method: "PATCH",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

@@ -1,46 +1,24 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Container, Button } from "@mui/material";
-import PageTitle from "../utils/PageTitle"; // Importa o componente de título
-//import WeatherComponent from "../utils/Weather"; // Importa o componente de clima
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Container, Button, Stack } from '@mui/material';
+import PageTitle from '../utils/PageTitle';
 
 function HomePage() {
   return (
-    <Container
-      maxWidth="sm"
-      style={{ textAlign: "center", padding: "40px 0", position: "relative" }}
-    >
+    <Container maxWidth="sm" sx={{ textAlign: 'center', padding: '40px 20px' }}>
       <PageTitle title="LazyQ Inc." subtitle="We Smoke While Y'All Snooze" />
-  
-      <div>
-        <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          to="/monitor"
-        >
-          Monitor
-        </Button>
-        <Button variant="contained" color="primary" component={Link} to="/mqtt">
-          MQTT
-        </Button>
-        <Button variant="contained" color="primary" component={Link} to="/log">
-          Log
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          to="/system"
-        >
-          System
-        </Button>
-       
-      </div>
+
+      <Stack spacing={2} sx={{ mt: 2 }}>
+        <Button variant="contained" component={Link} to="/monitor" fullWidth>Monitor</Button>
+        <Button variant="contained" component={Link} to="/mqtt" fullWidth>MQTT</Button>
+        <Button variant="contained" component={Link} to="/log" fullWidth>Log</Button>
+        <Button variant="contained" component={Link} to="/system" fullWidth>System</Button>
+      </Stack>
+
       <img
         src="/logo_gato.webp"
         alt="LazyQ Inc. Logo"
-        style={{ maxWidth: "100%", height: "auto", marginTop: "20px" }}
+        style={{ maxWidth: '100%', height: 'auto', marginTop: '30px' }}
       />
     </Container>
   );

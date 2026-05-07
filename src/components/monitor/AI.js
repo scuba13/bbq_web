@@ -18,59 +18,39 @@ function AIGeneratedContent() {
     getAiConfig().then(config => {
       setAiKey(config.aiKey);
       setDefaultTip(config.tip);
-    }).catch(err => {
-      console.error('Failed to fetch AI key:', err);
-      setError('Could not load AI configuration.');
+    }).catch(() => {
+      setError('Não foi possível carregar a configuração de AI.');
     });
   }, []);
 
-  const genAI = useMemo(() => {
-    if (aiKey) {
-      return new GoogleGenerativeAI(aiKey);
-    }
-  }, [aiKey]);
+  const genAI = useMemo(() => aiKey ? new GoogleGenerativeAI(aiKey) : null, [aiKey]);
 
-  const model = useMemo(() => {
-    if (genAI) {
-      return genAI.getGenerativeModel({ model: "gemini-pro" });
-    }
-  }, [genAI]);
+  // W-05: gemini-pro descontinuado → gemini-1.5-flash
+  const model = useMemo(() => genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null, [genAI]);
 
-  const fetchContent = useCallback(async (prompt, setContent) => {
-    if (!model) return;  // Ensure model is not undefined
+  const fetchContent = useCallback(async (promptText, setFn) => {
+    if (!model) return;
     try {
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = await response.text();
-      setContent(text);
-    } catch (error) {
-      console.error('Error fetching AI-generated content:', error);
-      setError('Could not fetch AI-generated content.');
+      const result = await model.generateContent(promptText);
+      const text = await result.response.text();
+      setFn(text);
+    } catch {
+      setError('Não foi possível obter conteúdo da AI.');
     }
   }, [model]);
 
   useEffect(() => {
-    if (!model || !defaultTip || !isOpen) return;  // Prevent fetching before the model or tip is initialized or if content is hidden
+    if (!model || !defaultTip || !isOpen) return;
     fetchContent(defaultTip, setAutoContent);
-    const intervalId = setInterval(() => {
-      if (isOpen) { // Only fetch new content if the content area is open
-        fetchContent(defaultTip, setAutoContent);
-      }
+    const id = setInterval(() => {
+      if (isOpen) fetchContent(defaultTip, setAutoContent);
     }, 60000);
-    return () => clearInterval(intervalId);
-  }, [fetchContent, model, defaultTip, isOpen]);  // Add isOpen to the dependency array
+    return () => clearInterval(id);
+  }, [fetchContent, model, defaultTip, isOpen]);
 
-  const handleInputChange = (event) => {
-    setPrompt(event.target.value);
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
     fetchContent(prompt, setContent);
-  };
-
-  const toggleContent = () => {
-    setIsOpen(!isOpen);
   };
 
   return (
@@ -78,24 +58,36 @@ function AIGeneratedContent() {
       <Card variant="outlined" sx={{ mt: 4 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-            <HelpOutlineIcon sx={{ mr: 1 }} /> {/* Icon added here */}
+            <HelpOutlineIcon sx={{ mr: 1 }} />
             Ask Me - Powered by Google AI
           </Typography>
           <form onSubmit={handleSubmit}>
-            <TextField fullWidth variant="outlined" label="Write here..." value={prompt} onChange={handleInputChange} sx={{ mb: 2 }} />
-            <Button type="submit" variant="contained" color="primary">Send</Button>
+            <TextField fullWidth label="Escreva aqui..." value={prompt}
+              onChange={e => setPrompt(e.target.value)} sx={{ mb: 2 }} />
+            <Button type="submit" variant="contained">Enviar</Button>
           </form>
-          {content && <Typography component="pre" sx={{ whiteSpace: 'pre-wrap', mt: 2 }}>{content}</Typography>}
+          {content && (
+            <Typography component="pre" sx={{ whiteSpace: 'pre-wrap', mt: 2 }}>{content}</Typography>
+          )}
         </CardContent>
       </Card>
+
       <Card variant="outlined" sx={{ mt: 4 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <AutoStoriesIcon sx={{ mr: 1 }} />
             BBQ AI Tips - Powered by Google AI
-            <Button onClick={toggleContent} sx={{ marginLeft: 'auto' }}>{isOpen ? 'Hide' : 'Show'}</Button>
+            <Button onClick={() => setIsOpen(o => !o)} sx={{ ml: 'auto' }}>
+              {isOpen ? 'Ocultar' : 'Mostrar'}
+            </Button>
           </Typography>
-          {isOpen && (error ? <Typography color="error">{error}</Typography> : <Typography component="pre" sx={{ whiteSpace: 'pre-wrap' }}>{autoContent || "No auto content available at the moment."}</Typography>)}
+          {isOpen && (
+            error
+              ? <Typography color="error">{error}</Typography>
+              : <Typography component="pre" sx={{ whiteSpace: 'pre-wrap' }}>
+                  {autoContent || 'Nenhum conteúdo disponível no momento.'}
+                </Typography>
+          )}
         </CardContent>
       </Card>
     </div>
